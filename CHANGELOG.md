@@ -16,6 +16,14 @@
 * **Support tables in section-less DOCX.** Generalize solution for MS Chat Transcripts exported as DOCX by including tables in the partitioned output when present.
 * **Improve DOCX page-break detection.** DOCX page breaks are reliably indicated by `w:lastRenderedPageBreak` elements present in the document XML. Page breaks are NOT reliably indicated by "hard" page-breaks inserted by the author and when present are redundant to a `w:lastRenderedPageBreak` element so cause over-counting if used. Use rendered page-breaks only.
 
+### Enhancements
+
+* **Improve DOCX page-break fidelity.** Improve page-break fidelity such that a paragraph containing a page-break is split into two elements, one containing the text before the page-break and the other the text after. Emit the PageBreak element between these two and assign the correct page-number (n and n+1 respectively) to the two textual elements.
+
+### Features
+
+### Fixes
+
 ## 0.10.29
 
 ### Enhancements
