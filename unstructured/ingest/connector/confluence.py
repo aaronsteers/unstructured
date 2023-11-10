@@ -235,8 +235,7 @@ class ConfluenceSourceConnector(SourceConnectorCleanupMixin, BaseSourceConnector
             number_of_items_to_fetch=self.connector_config.max_number_of_spaces,
         )
 
-        space_ids = [space["key"] for space in all_results]
-        return space_ids
+        return [space["key"] for space in all_results]
 
     @requires_dependencies(["atlassian"], extras="Confluence")
     def _get_docs_ids_within_one_space(
@@ -251,8 +250,7 @@ class ConfluenceSourceConnector(SourceConnectorCleanupMixin, BaseSourceConnector
             content_type=content_type,
         )
 
-        doc_ids = [(space_id, doc["id"]) for doc in results]
-        return doc_ids
+        return [(space_id, doc["id"]) for doc in results]
 
     @requires_dependencies(["atlassian"], extras="Confluence")
     def _get_doc_ids_within_spaces(self):
@@ -260,12 +258,11 @@ class ConfluenceSourceConnector(SourceConnectorCleanupMixin, BaseSourceConnector
 
         doc_ids_all = [self._get_docs_ids_within_one_space(space_id=id) for id in space_ids]
 
-        doc_ids_flattened = [
+        return [
             (space_id, doc_id)
             for doc_ids_space in doc_ids_all
             for space_id, doc_id in doc_ids_space
         ]
-        return doc_ids_flattened
 
     def get_ingest_docs(self):
         """Fetches all documents in a confluence space."""

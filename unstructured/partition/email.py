@@ -185,7 +185,7 @@ def extract_attachment_info(
             for idx, attachment in enumerate(list_attachments):
                 if output_dir:
                     if "filename" in attachment:
-                        filename = output_dir + "/" + attachment["filename"]
+                        filename = f"{output_dir}/" + attachment["filename"]
                         with open(filename, "wb") as f:
                             # Note(harrell) mypy wants to just us `w` when opening the file but this
                             # causes an error since the payloads are bytes not str
@@ -215,7 +215,7 @@ def find_embedded_image(
 
     image_raw_info = element.text[start:end]
     image_info = clean_extra_whitespace(image_raw_info.split(":")[1])
-    element.text = element.text.replace("[image: " + image_info[:-1] + "]", "")
+    element.text = element.text.replace(f"[image: {image_info[:-1]}]", "")
     return Image(text=image_info[:-1], detection_origin="email"), element
 
 
@@ -232,13 +232,15 @@ def parse_email(
     else:
         raise ValueError("Either 'filename' or 'file' must be provided.")
 
-    encoding = None
     charsets = msg.get_charsets() or []
-    for charset in charsets:
-        if charset and charset.strip() and validate_encoding(charset):
-            encoding = charset
-            break
-
+    encoding = next(
+        (
+            charset
+            for charset in charsets
+            if charset and charset.strip() and validate_encoding(charset)
+        ),
+        None,
+    )
     formatted_encoding = format_encoding_str(encoding) if encoding else None
 
     return formatted_encoding, msg
@@ -392,7 +394,7 @@ def partition_email(
                 )
                 try:
                     element.apply(_replace_mime_encodings)
-                except (UnicodeDecodeError, UnicodeError):
+                except UnicodeError:
                     # If decoding fails, try decoding through common encodings
                     common_encodings = []
                     for x in COMMON_ENCODINGS:
@@ -408,7 +410,7 @@ def partition_email(
                             )
                             element.apply(_replace_mime_encodings)
                             break
-                        except (UnicodeDecodeError, UnicodeError):
+                        except UnicodeError:
                             continue
 
     elif content_source == "text/plain":
@@ -429,9 +431,7 @@ def partition_email(
             elements[idx] = clean_element
             elements.insert(idx + 1, image_info)
 
-    header: List[Element] = []
-    if include_headers:
-        header = partition_email_header(msg)
+    header = partition_email_header(msg) if include_headers else []
     all_elements = header + elements
 
     metadata = build_email_metadata(

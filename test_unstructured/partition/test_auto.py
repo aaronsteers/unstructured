@@ -567,12 +567,8 @@ def test_partition_md_works_with_embedded_html():
     url = "https://raw.githubusercontent.com/Unstructured-IO/unstructured/main/README.md"
     elements = partition(url=url, content_type="text/markdown", strategy="hi_res")
     elements[0].text
-    unstructured_found = False
-    for element in elements:
-        if "unstructured" in elements[0].text:
-            unstructured_found = True
-            break
-    assert unstructured_found is True
+    unstructured_found = any("unstructured" in elements[0].text for _ in elements)
+    assert unstructured_found
 
 
 def test_auto_partition_warns_if_header_set_and_not_url(caplog):
@@ -679,7 +675,7 @@ def test_file_specific_produces_correct_filetype(filetype: FileType):
     filetype_module = (
         extension if filetype not in FILETYPE_TO_MODULE else FILETYPE_TO_MODULE[filetype]
     )
-    fun_name = "partition_" + filetype_module
+    fun_name = f"partition_{filetype_module}"
     module = import_module(f"unstructured.partition.{filetype_module}")  # noqa
     fun = eval(f"module.{fun_name}")
     for file in pathlib.Path("example-docs").iterdir():

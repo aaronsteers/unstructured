@@ -20,9 +20,11 @@ class Document(ABC):
         """Pulls out all of the narrative text sections from the document."""
         narrative: List[NarrativeText] = []
         for page in self.pages:
-            for element in page.elements:
-                if isinstance(element, NarrativeText):
-                    narrative.append(element)
+            narrative.extend(
+                element
+                for element in page.elements
+                if isinstance(element, NarrativeText)
+            )
         return narrative
 
     @property

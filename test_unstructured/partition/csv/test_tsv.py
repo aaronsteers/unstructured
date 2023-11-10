@@ -196,6 +196,6 @@ def test_partition_csv_header():
     elements = partition_tsv(filename=filename, strategy="fast", include_header=True)
     assert (
         clean_extra_whitespace(elements[0].text)
-        == "Stanley Cups Unnamed: 1 Unnamed: 2 " + EXPECTED_TEXT_XLSX
+        == f"Stanley Cups Unnamed: 1 Unnamed: 2 {EXPECTED_TEXT_XLSX}"
     )
     assert "<thead>" in elements[0].metadata.text_as_html

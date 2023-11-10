@@ -21,7 +21,7 @@ class ConfluenceCliConfig(CliConfig):
 
     @staticmethod
     def get_cli_options() -> t.List[click.Option]:
-        options = [
+        return [
             click.Option(
                 ["--api-token"],
                 required=True,
@@ -64,9 +64,7 @@ class ConfluenceCliConfig(CliConfig):
                 "--spaces and --num-of-spaces cannot be used at the same time",
             ),
         ]
-        return options
 
 
 def get_base_src_cmd() -> BaseSrcCmd:
-    cmd_cls = BaseSrcCmd(cmd_name="confluence", cli_config=ConfluenceCliConfig)
-    return cmd_cls
+    return BaseSrcCmd(cmd_name="confluence", cli_config=ConfluenceCliConfig)

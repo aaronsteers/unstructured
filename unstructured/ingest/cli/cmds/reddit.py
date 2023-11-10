@@ -20,7 +20,7 @@ class RedditCliConfig(CliConfig):
 
     @staticmethod
     def get_cli_options() -> t.List[click.Option]:
-        options = [
+        return [
             click.Option(
                 ["--client-id"],
                 required=True,
@@ -62,9 +62,7 @@ class RedditCliConfig(CliConfig):
                 help="user agent request header to use when calling Reddit API",
             ),
         ]
-        return options
 
 
 def get_base_src_cmd() -> BaseSrcCmd:
-    cmd_cls = BaseSrcCmd(cmd_name="reddit", cli_config=RedditCliConfig)
-    return cmd_cls
+    return BaseSrcCmd(cmd_name="reddit", cli_config=RedditCliConfig)

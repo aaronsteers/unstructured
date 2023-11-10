@@ -72,12 +72,13 @@ base_src_cmd_fns: t.List[t.Callable[[], BaseSrcCmd]] = [
 
 # Make sure there are not overlapping names
 src_cmd_names = [b().cmd_name for b in base_src_cmd_fns]
-src_duplicates = [item for item, count in collections.Counter(src_cmd_names).items() if count > 1]
-if src_duplicates:
+if src_duplicates := [
+    item
+    for item, count in collections.Counter(src_cmd_names).items()
+    if count > 1
+]:
     raise ValueError(
-        "multiple base src commands defined with the same names: {}".format(
-            ", ".join(src_duplicates),
-        ),
+        f'multiple base src commands defined with the same names: {", ".join(src_duplicates)}'
     )
 
 base_dest_cmd_fns: t.List[t.Callable[[], "BaseDestCmd"]] = [
@@ -93,12 +94,13 @@ base_dest_cmd_fns: t.List[t.Callable[[], "BaseDestCmd"]] = [
 
 # Make sure there are not overlapping names
 dest_cmd_names = [b().cmd_name for b in base_dest_cmd_fns]
-dest_duplicates = [item for item, count in collections.Counter(dest_cmd_names).items() if count > 1]
-if dest_duplicates:
+if dest_duplicates := [
+    item
+    for item, count in collections.Counter(dest_cmd_names).items()
+    if count > 1
+]:
     raise ValueError(
-        "multiple base dest commands defined with the same names: {}".format(
-            ", ".join(dest_duplicates),
-        ),
+        f'multiple base dest commands defined with the same names: {", ".join(dest_duplicates)}'
     )
 
 __all__ = [

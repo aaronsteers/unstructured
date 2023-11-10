@@ -258,13 +258,10 @@ class HTMLDocument(XMLDocument):
 
 def _get_links_from_tag(tag_elem: etree.Element) -> List[Link]:
     links: List[Link] = []
-    href = tag_elem.get("href")
-    # TODO(klaijan) - add html href start_index
-    if href:
+    if href := tag_elem.get("href"):
         links.append({"text": tag_elem.text, "url": href, "start_index": -1})
     for tag in tag_elem.iterdescendants():
-        href = tag.get("href")
-        if href:
+        if href := tag.get("href"):
             links.append({"text": tag.text, "url": href, "start_index": -1})
     return links
 
@@ -278,13 +275,11 @@ def _get_emphasized_texts_from_tag(tag_elem: etree.Element) -> List[dict]:
         return []
 
     if tag_elem.tag in tags_to_track:
-        text = _construct_text(tag_elem, False)
-        if text:
+        if text := _construct_text(tag_elem, False):
             emphasized_texts.append({"text": text, "tag": tag_elem.tag})
 
     for descendant_tag_elem in tag_elem.iterdescendants(*tags_to_track):
-        text = _construct_text(descendant_tag_elem, False)
-        if text:
+        if text := _construct_text(descendant_tag_elem, False):
             emphasized_texts.append({"text": text, "tag": descendant_tag_elem.tag})
 
     return emphasized_texts
@@ -315,17 +310,17 @@ def _parse_tag(
 
     if tag_elem.tag == "script":
         return None
-    text = _construct_text(tag_elem)
-    if not text:
+    if text := _construct_text(tag_elem):
+        return _text_to_element(
+            text,
+            tag_elem.tag,
+            ancestortags,
+            links=links,
+            emphasized_texts=emphasized_texts,
+            depth=depth,
+        )
+    else:
         return None
-    return _text_to_element(
-        text,
-        tag_elem.tag,
-        ancestortags,
-        links=links,
-        emphasized_texts=emphasized_texts,
-        depth=depth,
-    )
 
 
 def _text_to_element(
@@ -406,10 +401,7 @@ def _is_container_with_text(tag_elem: etree.Element) -> bool:
     if tag_elem.tag not in SECTION_TAGS + ["body"] or len(tag_elem) == 0:
         return False
 
-    if tag_elem.text is None or tag_elem.text.strip() == "":
-        return False
-
-    return True
+    return tag_elem.text is not None and tag_elem.text.strip() != ""
 
 
 def is_narrative_tag(text: str, tag: str) -> bool:
@@ -424,13 +416,9 @@ def is_heading_tag(tag: str) -> bool:
 
 def _construct_text(tag_elem: etree.Element, include_tail_text: bool = True) -> str:
     """Extracts text from a text tag element."""
-    text = ""
-    for item in tag_elem.itertext():
-        if item:
-            text += item
-
+    text = "".join(item for item in tag_elem.itertext() if item)
     if include_tail_text and tag_elem.tail:
-        text = text + tag_elem.tail
+        text += tag_elem.tail
 
     text = replace_unicode_quotes(text)
     return text.strip()
@@ -480,10 +468,7 @@ def _is_text_tag(tag_elem: etree.Element, max_predecessor_len: int = 5) -> bool:
     if tag_elem.tag in SECTION_TAGS + ["body"] and len(children) == 0:
         return True
 
-    if _has_adjacent_bulleted_spans(tag_elem, children):
-        return True
-
-    return False
+    return bool(_has_adjacent_bulleted_spans(tag_elem, children))
 
 
 def _process_leaf_table_item(
@@ -564,24 +549,23 @@ def _get_bullet_descendants(element, next_element) -> Tuple[etree.Element, ...]:
     descendants = []
     if element is not None and next_element is not None:
         descendants += list(next_element.iterdescendants())
-    descendanttag_elems = tuple(descendants)
-    return descendanttag_elems
+    return tuple(descendants)
 
 
 def is_list_item_tag(tag_elem: etree.Element) -> bool:
     """Checks to see if a tag contains bulleted text."""
-    if tag_elem.tag in LIST_ITEM_TAGS or (
-        tag_elem.tag in SECTION_TAGS and is_bulleted_text(_construct_text(tag_elem))
-    ):
-        return True
-    return False
+    return bool(
+        tag_elem.tag in LIST_ITEM_TAGS
+        or (
+            tag_elem.tag in SECTION_TAGS
+            and is_bulleted_text(_construct_text(tag_elem))
+        )
+    )
 
 
 def _is_table_item(tag_elem: etree.Element) -> bool:
     """Checks to see if a tag contains table item"""
-    if tag_elem.tag in TABLE_TAGS:
-        return True
-    return False
+    return tag_elem.tag in TABLE_TAGS
 
 
 def _bulleted_text_from_table(table) -> List[Element]:
@@ -641,9 +625,12 @@ def is_table(element: TagsMixin) -> bool:
 
 def in_header_or_footer(element: TagsMixin) -> bool:
     """Checks to see if an element is contained within a header or a footer tag."""
-    if any(ancestor in HEADER_OR_FOOTER_TAGS for ancestor in element.ancestortags):
-        return True
-    return False
+    return any(
+        (
+            ancestor in HEADER_OR_FOOTER_TAGS
+            for ancestor in element.ancestortags
+        )
+    )
 
 
 def _find_main(root: etree.Element) -> etree.Element:
@@ -659,7 +646,7 @@ def _find_articles(
 ) -> List[etree.Element]:
     """Tries to break the HTML document into distinct articles. If there are no article
     tags, the entire document is returned as a single item list."""
-    if assemble_articles is False:
+    if not assemble_articles:
         return root
 
     articles = root.findall(".//article")

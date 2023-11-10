@@ -21,11 +21,7 @@ class BiomedRunner(Runner):
         base_path = (
             path
             if path
-            else "{}-{}-{}".format(
-                api_id if api_id else "",
-                api_from if api_from else "",
-                api_until if api_until else "",
-            )
+            else f'{api_id if api_id else ""}-{api_from if api_from else ""}-{api_until if api_until else ""}'
         )
 
         hashed_dir_name = hashlib.sha256(

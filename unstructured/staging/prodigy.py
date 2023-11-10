@@ -16,24 +16,22 @@ def _validate_prodigy_metadata(
     Raises ValueError with error message if metadata is not valid.
     """
     validated_metadata: Iterable[Dict[str, str]]
-    if metadata:
-        if len(metadata) != len(elements):
-            raise ValueError(
-                "The length of the metadata parameter does not match with"
-                " the length of the elements parameter.",
-            )
-        id_error_index: Optional[int] = next(
-            (index for index, metadatum in enumerate(metadata) if "id" in metadatum),
-            None,
+    if not metadata:
+        return [{} for _ in elements]
+    if len(metadata) != len(elements):
+        raise ValueError(
+            "The length of the metadata parameter does not match with"
+            " the length of the elements parameter.",
         )
-        if isinstance(id_error_index, int):
-            raise ValueError(
-                f'The key "id" is not allowed with metadata parameter at index: {id_error_index}',
-            )
-        validated_metadata = metadata
-    else:
-        validated_metadata = [{} for _ in elements]
-    return validated_metadata
+    id_error_index: Optional[int] = next(
+        (index for index, metadatum in enumerate(metadata) if "id" in metadatum),
+        None,
+    )
+    if isinstance(id_error_index, int):
+        raise ValueError(
+            f'The key "id" is not allowed with metadata parameter at index: {id_error_index}',
+        )
+    return metadata
 
 
 def stage_for_prodigy(

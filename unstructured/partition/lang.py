@@ -153,7 +153,7 @@ def prepare_languages_for_tesseract(languages: Optional[List[str]] = ["eng"]):
     )
     # Remove duplicates from the list but keep the original order
     converted_languages = list(dict.fromkeys(converted_languages))
-    if len(converted_languages) == 0:
+    if not converted_languages:
         logger.warning(
             "Failed to find any valid standard language code from "
             f"languages: {languages}, proceed with `eng` instead.",
@@ -247,7 +247,7 @@ def detect_languages(
     # gets overwritten after elements have been returned by _html and _text,
     # so `languages` would be detected twice.
     # Also return None if there is no text.
-    if languages[0] == "" or text.strip() == "":
+    if languages[0] == "" or not text.strip():
         return None
 
     # If text contains special characters (like ñ, å, or Korean/Mandarin/etc.) it will NOT default
@@ -330,7 +330,7 @@ def apply_lang_metadata(
     if (
         detected_languages is not None
         and len(languages) == 1
-        and detect_language_per_element is False
+        and not detect_language_per_element
     ):
         # -- apply detected language to each metadata --
         for e in elements:
@@ -340,6 +340,4 @@ def apply_lang_metadata(
         for e in elements:
             if hasattr(e, "text"):
                 e.metadata.languages = detect_languages(e.text)
-                yield e
-            else:
-                yield e
+            yield e

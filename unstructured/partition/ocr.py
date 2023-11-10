@@ -82,7 +82,7 @@ def process_data_with_ocr(
     with tempfile.NamedTemporaryFile() as tmp_file:
         tmp_file.write(data.read() if hasattr(data, "read") else data)
         tmp_file.flush()
-        merged_layouts = process_file_with_ocr(
+        return process_file_with_ocr(
             filename=tmp_file.name,
             out_layout=out_layout,
             is_image=is_image,
@@ -91,7 +91,6 @@ def process_data_with_ocr(
             ocr_mode=ocr_mode,
             pdf_image_dpi=pdf_image_dpi,
         )
-        return merged_layouts
 
 
 def process_file_with_ocr(
@@ -282,20 +281,18 @@ def get_table_tokens(
         ocr_languages=ocr_languages,
         ocr_agent=ocr_agent,
     )
-    table_tokens = []
-    for ocr_region in ocr_layout:
-        table_tokens.append(
-            {
-                "bbox": [
-                    ocr_region.bbox.x1,
-                    ocr_region.bbox.y1,
-                    ocr_region.bbox.x2,
-                    ocr_region.bbox.y2,
-                ],
-                "text": ocr_region.text,
-            }
-        )
-
+    table_tokens = [
+        {
+            "bbox": [
+                ocr_region.bbox.x1,
+                ocr_region.bbox.y1,
+                ocr_region.bbox.x2,
+                ocr_region.bbox.y2,
+            ],
+            "text": ocr_region.text,
+        }
+        for ocr_region in ocr_layout
+    ]
     # 'table_tokens' is a list of tokens
     # Need to be in a relative reading order
     # If no order is provided, use current order
@@ -342,33 +339,33 @@ def get_layout_elements_from_ocr(
         # terms of grouping because we get ocr_text from `ocr_layout, so the first two grouping
         # and merging steps are not necessary.
 
-        layout_elements = [
+        return [
             LayoutElement(
-                bbox=r.bbox, text=r.text, source=r.source, type=ElementType.UNCATEGORIZED_TEXT
+                bbox=r.bbox,
+                text=r.text,
+                source=r.source,
+                type=ElementType.UNCATEGORIZED_TEXT,
             )
             for r in ocr_regions
         ]
-    else:
-        # NOTE(christine): For tesseract, the ocr_text returned by
-        # `unstructured_pytesseract.image_to_string()` doesn't contain bounding box data but is
-        # well grouped. Conversely, the ocr_layout returned by parsing
-        # `unstructured_pytesseract.image_to_data()` contains bounding box data but is not well
-        # grouped. Therefore, we need to first group the `ocr_layout` by `ocr_text` and then merge
-        # the text regions in each group to create a list of layout elements.
+    # NOTE(christine): For tesseract, the ocr_text returned by
+    # `unstructured_pytesseract.image_to_string()` doesn't contain bounding box data but is
+    # well grouped. Conversely, the ocr_layout returned by parsing
+    # `unstructured_pytesseract.image_to_data()` contains bounding box data but is not well
+    # grouped. Therefore, we need to first group the `ocr_layout` by `ocr_text` and then merge
+    # the text regions in each group to create a list of layout elements.
 
-        ocr_text = get_ocr_text_from_image(
-            image,
-            ocr_languages=ocr_languages,
-            ocr_agent=ocr_agent,
-        )
+    ocr_text = get_ocr_text_from_image(
+        image,
+        ocr_languages=ocr_languages,
+        ocr_agent=ocr_agent,
+    )
 
-        layout_elements = get_elements_from_ocr_regions(
-            ocr_regions=ocr_regions,
-            ocr_text=ocr_text,
-            group_by_ocr_text=True,
-        )
-
-    return layout_elements
+    return get_elements_from_ocr_regions(
+        ocr_regions=ocr_regions,
+        ocr_text=ocr_text,
+        group_by_ocr_text=True,
+    )
 
 
 def pad_element_bboxes(
@@ -415,15 +412,13 @@ def get_ocr_text_from_image(
     """
     Get the OCR text from image as a string with paddle or tesseract.
     """
-    if ocr_agent == OCR_AGENT_PADDLE:
-        ocr_regions = get_ocr_layout_paddle(image)
-        ocr_text = "\n\n".join([r.text for r in ocr_regions])
-    else:
-        ocr_text = unstructured_pytesseract.image_to_string(
+    if ocr_agent != OCR_AGENT_PADDLE:
+        return unstructured_pytesseract.image_to_string(
             np.array(image),
             lang=ocr_languages,
         )
-    return ocr_text
+    ocr_regions = get_ocr_layout_paddle(image)
+    return "\n\n".join([r.text for r in ocr_regions])
 
 
 def get_ocr_layout_from_image(
@@ -435,12 +430,11 @@ def get_ocr_layout_from_image(
     Get the OCR regions from image as a list of text regions with paddle or tesseract.
     """
 
-    if ocr_agent == OCR_AGENT_PADDLE:
-        ocr_regions = get_ocr_layout_paddle(image)
-    else:
-        ocr_regions = get_ocr_layout_tesseract(image, ocr_languages)
-
-    return ocr_regions
+    return (
+        get_ocr_layout_paddle(image)
+        if ocr_agent == OCR_AGENT_PADDLE
+        else get_ocr_layout_tesseract(image, ocr_languages)
+    )
 
 
 def get_ocr_layout_tesseract(
@@ -480,9 +474,7 @@ def get_ocr_layout_tesseract(
         )
         ocr_df = ocr_df.dropna()
 
-    ocr_regions = parse_ocr_data_tesseract(ocr_df, zoom=zoom)
-
-    return ocr_regions
+    return parse_ocr_data_tesseract(ocr_df, zoom=zoom)
 
 
 def get_ocr_layout_paddle(image: PILImage) -> List[TextRegion]:
@@ -495,9 +487,7 @@ def get_ocr_layout_paddle(image: PILImage) -> List[TextRegion]:
     # have the mapping for paddle lang code
     # see CORE-2034
     ocr_data = paddle_ocr.load_agent().ocr(np.array(image), cls=True)
-    ocr_regions = parse_ocr_data_paddle(ocr_data)
-
-    return ocr_regions
+    return parse_ocr_data_paddle(ocr_data)
 
 
 def parse_ocr_data_tesseract(ocr_data: pd.DataFrame, zoom: float = 1) -> List[TextRegion]:
@@ -533,8 +523,7 @@ def parse_ocr_data_tesseract(ocr_data: pd.DataFrame, zoom: float = 1) -> List[Te
         text = idtx.text
         if not text:
             continue
-        cleaned_text = text.strip()
-        if cleaned_text:
+        if cleaned_text := text.strip():
             x1 = idtx.left / zoom
             y1 = idtx.top / zoom
             x2 = (idtx.left + idtx.width) / zoom
@@ -573,18 +562,17 @@ def parse_ocr_data_paddle(ocr_data: list) -> List[TextRegion]:
       dictionary will result in its associated bounding box being ignored.
     """
     text_regions = []
-    for idx in range(len(ocr_data)):
-        res = ocr_data[idx]
+    for ocr_datum in ocr_data:
+        res = ocr_datum
         for line in res:
-            x1 = min([i[0] for i in line[0]])
-            y1 = min([i[1] for i in line[0]])
-            x2 = max([i[0] for i in line[0]])
-            y2 = max([i[1] for i in line[0]])
+            x1 = min(i[0] for i in line[0])
+            y1 = min(i[1] for i in line[0])
+            x2 = max(i[0] for i in line[0])
+            y2 = max(i[1] for i in line[0])
             text = line[1][0]
             if not text:
                 continue
-            cleaned_text = text.strip()
-            if cleaned_text:
+            if cleaned_text := text.strip():
                 text_region = TextRegion.from_coords(
                     x1,
                     y1,
@@ -621,13 +609,11 @@ def merge_out_layout_with_ocr_layout(
             SUBREGION_THRESHOLD_FOR_OCR,
         )
 
-    final_layout = (
+    return (
         supplement_layout_with_ocr_elements(out_layout, ocr_layout)
         if supplement_with_ocr_elements
         else out_layout
     )
-
-    return final_layout
 
 
 def aggregate_ocr_text_by_block(
@@ -692,14 +678,13 @@ def supplement_layout_with_ocr_elements(
                 ocr_regions_to_remove.append(ocr_region)
                 break
 
-    ocr_regions_to_add = [region for region in ocr_layout if region not in ocr_regions_to_remove]
-    if ocr_regions_to_add:
+    if ocr_regions_to_add := [
+        region for region in ocr_layout if region not in ocr_regions_to_remove
+    ]:
         ocr_elements_to_add = get_elements_from_ocr_regions(ocr_regions_to_add)
-        final_layout = layout + ocr_elements_to_add
+        return layout + ocr_elements_to_add
     else:
-        final_layout = layout
-
-    return final_layout
+        return layout
 
 
 def get_elements_from_ocr_regions(
@@ -760,10 +745,10 @@ def merge_text_regions(regions: List[TextRegion]) -> TextRegion:
     if not regions:
         raise ValueError("The text regions to be merged must be provided.")
 
-    min_x1 = min([tr.bbox.x1 for tr in regions])
-    min_y1 = min([tr.bbox.y1 for tr in regions])
-    max_x2 = max([tr.bbox.x2 for tr in regions])
-    max_y2 = max([tr.bbox.y2 for tr in regions])
+    min_x1 = min(tr.bbox.x1 for tr in regions)
+    min_y1 = min(tr.bbox.y1 for tr in regions)
+    max_x2 = max(tr.bbox.x2 for tr in regions)
+    max_y2 = max(tr.bbox.y2 for tr in regions)
 
     merged_text = " ".join([tr.text for tr in regions if tr.text])
     sources = [tr.source for tr in regions]

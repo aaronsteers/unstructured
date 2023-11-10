@@ -23,10 +23,7 @@ class SimpleLocalConfig(BaseConnectorConfig):
     file_glob: t.Optional[str] = None
 
     def __post_init__(self):
-        if os.path.isfile(self.input_path):
-            self.input_path_is_file = True
-        else:
-            self.input_path_is_file = False
+        self.input_path_is_file = bool(os.path.isfile(self.input_path))
 
 
 @dataclass
@@ -43,8 +40,7 @@ class LocalIngestDoc(BaseIngestDoc):
     def base_filename(self) -> t.Optional[str]:
         download_path = str(Path(self.connector_config.input_path).resolve())
         full_path = str(self.filename)
-        base_path = full_path.replace(download_path, "")
-        return base_path
+        return full_path.replace(download_path, "")
 
     @property
     def filename(self):

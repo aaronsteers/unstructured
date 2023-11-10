@@ -70,8 +70,7 @@ def get_forms_by_cik(session: requests.Session, cik: Union[str, int]) -> dict:
     response.raise_for_status()
     content = json.loads(response.content)
     recent_forms = content["filings"]["recent"]
-    form_types = dict(zip(recent_forms["accessionNumber"], recent_forms["form"]))
-    return form_types
+    return dict(zip(recent_forms["accessionNumber"], recent_forms["form"]))
 
 
 def _get_recent_acc_num_by_cik(
@@ -163,8 +162,7 @@ def get_form_by_cik(
         cik,
         _form_types(form_type, allow_amended_filing),
     )
-    text = _get_filing(session, cik, acc_num)
-    return text
+    return _get_filing(session, cik, acc_num)
 
 
 def open_form(cik, acc_num):
@@ -203,8 +201,7 @@ def archive_url(cik: Union[str, int], accession_number: Union[str, int]) -> str:
 
 def _search_url(cik: Union[str, int]) -> str:
     search_string = f"CIK={cik}&Find=Search&owner=exclude&action=getcompany"
-    url = f"{SEC_SEARCH_URL}?{search_string}"
-    return url
+    return f"{SEC_SEARCH_URL}?{search_string}"
 
 
 def _add_dashes(accession_number: Union[str, int]) -> str:

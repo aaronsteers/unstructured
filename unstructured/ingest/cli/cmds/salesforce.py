@@ -21,7 +21,7 @@ class SalesforceCliConfig(CliConfig):
     @staticmethod
     def get_cli_options() -> t.List[click.Option]:
         possible_categories = ["Account", "Case", "Campaign", "EmailMessage", "Lead"]
-        options = [
+        return [
             click.Option(
                 ["--username"],
                 required=True,
@@ -46,17 +46,14 @@ class SalesforceCliConfig(CliConfig):
                 default=None,
                 required=True,
                 type=DelimitedString(choices=possible_categories),
-                help="Comma-delimited salesforce categories to download. "
-                "Currently only {}.".format(", ".join(possible_categories)),
+                help=f'Comma-delimited salesforce categories to download. Currently only {", ".join(possible_categories)}.',
             ),
         ]
-        return options
 
 
 def get_base_src_cmd() -> BaseSrcCmd:
-    cmd_cls = BaseSrcCmd(
+    return BaseSrcCmd(
         cmd_name="salesforce",
         cli_config=SalesforceCliConfig,
         additional_cli_options=[CliRecursiveConfig],
     )
-    return cmd_cls

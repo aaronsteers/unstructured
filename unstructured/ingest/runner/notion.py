@@ -28,19 +28,16 @@ class NotionRunner(Runner):
 
         if page_ids and database_ids:
             hashed_dir_name = hashlib.sha256(
-                "{},{}".format(",".join(page_ids), ",".join(database_ids)).encode("utf-8"),
+                f'{",".join(page_ids)},{",".join(database_ids)}'.encode("utf-8")
             )
         elif page_ids:
             hashed_dir_name = hashlib.sha256(
                 ",".join(page_ids).encode("utf-8"),
             )
-        elif database_ids:
+        else:
             hashed_dir_name = hashlib.sha256(
                 ",".join(database_ids).encode("utf-8"),
             )
-        else:
-            raise ValueError("could not create local cache directory name")
-
         self.read_config.download_dir = update_download_dir_hash(
             connector_name="notion",
             read_config=self.read_config,

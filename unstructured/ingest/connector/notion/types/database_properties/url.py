@@ -32,6 +32,4 @@ class URLCell(DBCellBase):
         return cls(**data)
 
     def get_html(self) -> Optional[HtmlTag]:
-        if url := self.url:
-            return A([Href(url)], url)
-        return None
+        return A([Href(url)], url) if (url := self.url) else None

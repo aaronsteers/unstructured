@@ -279,7 +279,7 @@ def _combine_paragraphs_less_than_min(
                 # that have been combined.
                 if len(combined_para) + len(next_para) + 1 <= max_partition:
                     combined_idxs.append(i + j + 1)
-                    combined_para += " " + next_para
+                    combined_para += f" {next_para}"
                 else:
                     break
             combined_paras.append(combined_para)
@@ -304,24 +304,22 @@ def _split_by_paragraph(
             ),
         )
 
-    combined_paragraphs = _combine_paragraphs_less_than_min(
+    return _combine_paragraphs_less_than_min(
         split_paragraphs=split_paragraphs,
         max_partition=max_partition,
         min_partition=min_partition,
     )
-
-    return combined_paragraphs
 
 
 def _split_content_size_n(content: str, n: int) -> List[str]:
     """Splits a section of content into chunks that are at most
     size n without breaking apart words."""
     segments = []
-    if len(content) < n * 2:
-        segments = list(_split_in_half_at_breakpoint(content))
-    else:
-        segments = textwrap.wrap(content, width=n)
-    return segments
+    return (
+        list(_split_in_half_at_breakpoint(content))
+        if len(content) < n * 2
+        else textwrap.wrap(content, width=n)
+    )
 
 
 def _split_content_to_fit_max(
@@ -345,20 +343,17 @@ def _split_content_to_fit_max(
             segments = _split_content_size_n(sentence, n=max_partition)
             chunks.extend(segments[:-1])
             tmp_chunk = segments[-1]
+        elif (
+            max_partition is not None
+            and len(f"{tmp_chunk} {sentence}") > max_partition
+        ):
+            chunks.append(tmp_chunk)
+            tmp_chunk = sentence
+        elif tmp_chunk:
+            tmp_chunk += f" {sentence}"
+            tmp_chunk = tmp_chunk.strip()
         else:
-            # If the current sentence is smaller than `max_partition`, but adding it to the
-            # current `tmp_chunk` would exceed `max_partition`, add the `tmp_chunk` to the
-            # final list of `chunks` and begin the next chunk with the current sentence.
-            if max_partition is not None and len(tmp_chunk + " " + sentence) > max_partition:
-                chunks.append(tmp_chunk)
-                tmp_chunk = sentence
-            else:
-                # Otherwise, the sentence can be added to `tmp_chunk`
-                if not tmp_chunk:
-                    tmp_chunk = sentence
-                else:
-                    tmp_chunk += " " + sentence
-                    tmp_chunk = tmp_chunk.strip()
+            tmp_chunk = sentence
     if tmp_chunk:
         chunks.append(tmp_chunk)
 

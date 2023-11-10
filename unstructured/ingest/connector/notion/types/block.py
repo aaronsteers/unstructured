@@ -90,6 +90,4 @@ class Block(FromJSONMixin, GetHTMLMixin):
         return block
 
     def get_html(self) -> Optional[HtmlTag]:
-        if self.block:
-            return self.block.get_html()
-        return None
+        return self.block.get_html() if self.block else None

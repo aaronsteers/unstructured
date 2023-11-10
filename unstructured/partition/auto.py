@@ -53,7 +53,6 @@ if dependency_exists("pypandoc"):
     PARTITION_WITH_EXTRAS_MAP["epub"] = partition_epub
 
 
-if dependency_exists("pypandoc"):
     from unstructured.partition.org import partition_org
     from unstructured.partition.rst import partition_rst
     from unstructured.partition.rtf import partition_rtf
@@ -222,19 +221,16 @@ def partition(
         ocr_languages = None
 
     if ocr_languages is not None:
-        # check if languages was set to anything not the default value
-        # languages and ocr_languages were therefore both provided - raise error
         if languages is not None:
             raise ValueError(
                 "Only one of languages and ocr_languages should be specified. "
                 "languages is preferred. ocr_languages is marked for deprecation.",
             )
-        else:
-            languages = convert_old_ocr_languages_to_languages(ocr_languages)
-            logger.warning(
-                "The ocr_languages kwarg will be deprecated in a future version of unstructured. "
-                "Please use languages instead.",
-            )
+        languages = convert_old_ocr_languages_to_languages(ocr_languages)
+        logger.warning(
+            "The ocr_languages kwarg will be deprecated in a future version of unstructured. "
+            "Please use languages instead.",
+        )
 
     if url is not None:
         file, filetype = file_and_type_from_url(
@@ -392,7 +388,7 @@ def partition(
             image_output_dir_path=pdf_image_output_dir_path,
             **kwargs,
         )
-    elif (filetype == FileType.PNG) or (filetype == FileType.JPG) or (filetype == FileType.TIFF):
+    elif filetype in [FileType.PNG, FileType.JPG, FileType.TIFF]:
         elements = partition_image(
             filename=filename,  # type: ignore
             file=file,  # type: ignore
@@ -453,7 +449,7 @@ def partition(
                 "partition_json currently only processes serialized Unstructured output.",
             )
         elements = partition_json(filename=filename, file=file, **kwargs)
-    elif (filetype == FileType.XLSX) or (filetype == FileType.XLS):
+    elif filetype in [FileType.XLSX, FileType.XLS]:
         _partition_xlsx = _get_partition_with_extras("xlsx")
         elements = _partition_xlsx(
             filename=filename,

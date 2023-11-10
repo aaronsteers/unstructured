@@ -88,15 +88,8 @@ def get_last_modified_date(filename: str) -> Union[str, None]:
 def get_last_modified_date_from_file(
     file: Union[IO[bytes], SpooledTemporaryFile[bytes], BinaryIO, bytes],
 ) -> Union[str, None]:
-    filename = None
-    if hasattr(file, "name"):
-        filename = file.name
-
-    if not filename:
-        return None
-
-    modify_date = get_last_modified_date(filename)
-    return modify_date
+    filename = file.name if hasattr(file, "name") else None
+    return None if not filename else get_last_modified_date(filename)
 
 
 def normalize_layout_element(
@@ -130,9 +123,7 @@ def normalize_layout_element(
     element_type = layout_dict.get("type")
     prob = layout_dict.get("prob")
     aux_origin = layout_dict["source"] if "source" in layout_dict else None
-    origin = None
-    if aux_origin:
-        origin = aux_origin.value
+    origin = aux_origin.value if aux_origin else None
     if prob and isinstance(prob, (int, str, float, numbers.Number)):
         class_prob_metadata = ElementMetadata(detection_class_prob=float(prob))  # type: ignore
     else:
@@ -434,7 +425,7 @@ def exactly_one(**kwargs: Any) -> None:
     Example:
         >>> exactly_one(filename=filename, file=file, text=text, url=url)
     """
-    if sum([(arg is not None and arg != "") for arg in kwargs.values()]) != 1:
+    if sum((arg is not None and arg != "") for arg in kwargs.values()) != 1:
         names = list(kwargs.keys())
         if len(names) > 1:
             message = f"Exactly one of {', '.join(names[:-1])} and {names[-1]} must be specified."
@@ -446,13 +437,12 @@ def exactly_one(**kwargs: Any) -> None:
 def spooled_to_bytes_io_if_needed(
     file_obj: Optional[Union[bytes, BinaryIO, SpooledTemporaryFile[bytes]]],
 ) -> Optional[Union[bytes, BinaryIO]]:
-    if isinstance(file_obj, SpooledTemporaryFile):
-        file_obj.seek(0)
-        contents = file_obj.read()
-        return BytesIO(contents)
-    else:
+    if not isinstance(file_obj, SpooledTemporaryFile):
         # Return the original file object if it's not a SpooledTemporaryFile
         return file_obj
+    file_obj.seek(0)
+    contents = file_obj.read()
+    return BytesIO(contents)
 
 
 def convert_to_bytes(
@@ -490,15 +480,13 @@ def convert_ms_office_table_to_text(
     Returns:
         str: An table string representation of the input table.
     """
-    fmt = "html" if as_html else "plain"
-    rows = list(table.rows)
-    if len(rows) > 0:
+    if rows := list(table.rows):
         headers = [cell.text for cell in rows[0].cells]
         data = [[cell.text for cell in row.cells] for row in rows[1:]]
-        table_text = tabulate(data, headers=headers, tablefmt=fmt)
+        fmt = "html" if as_html else "plain"
+        return tabulate(data, headers=headers, tablefmt=fmt)
     else:
-        table_text = ""
-    return table_text
+        return ""
 
 
 def contains_emoji(s: str) -> bool:

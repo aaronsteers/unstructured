@@ -982,7 +982,7 @@ class Describe_TextSectionBuilder:
 
         sections = list(builder.flush())
 
-        assert sections == []
+        assert not sections
         assert builder.text_length == 0
         assert builder.remaining_space == 150
 
@@ -1326,7 +1326,7 @@ class Describe_TextSectionAccumulator:
 
         sections = list(accum.flush())
 
-        assert sections == []
+        assert not sections
         assert accum.text_length == 0
         assert accum.remaining_space == 150
 

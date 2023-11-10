@@ -470,8 +470,7 @@ class _DocxPartitioner:
 
         # -- a list gets some special treatment --
         if self._is_list_item(paragraph):
-            clean_text = clean_bullets(text).strip()
-            if clean_text:
+            if clean_text := clean_bullets(text).strip():
                 yield ListItem(
                     text=clean_text,
                     metadata=metadata,
@@ -479,15 +478,11 @@ class _DocxPartitioner:
                 )
             return
 
-        # -- determine element-type from an explicit Word paragraph-style if possible --
-        TextSubCls = self._style_based_element_type(paragraph)
-        if TextSubCls:
+        if TextSubCls := self._style_based_element_type(paragraph):
             yield TextSubCls(text=text, metadata=metadata, detection_origin=DETECTION_ORIGIN)
             return
 
-        # -- try to recognize the element type by parsing its text --
-        TextSubCls = self._parse_paragraph_text_for_element_type(paragraph)
-        if TextSubCls:
+        if TextSubCls := self._parse_paragraph_text_for_element_type(paragraph):
             yield TextSubCls(text=text, metadata=metadata, detection_origin=DETECTION_ORIGIN)
             return
 
@@ -767,10 +762,7 @@ class _DocxPartitioner:
             return EmailAddress
         if is_possible_narrative_text(text):
             return NarrativeText
-        if is_possible_title(text):
-            return Title
-
-        return None
+        return Title if is_possible_title(text) else None
 
     def _style_based_element_type(self, paragraph: Paragraph) -> Optional[Type[Text]]:
         """Element-type for `paragraph` based on its paragraph-style.
@@ -830,20 +822,14 @@ class _DocxPartitioner:
     def _parse_category_depth_by_style(self, paragraph: Paragraph) -> int:
         """Determine category depth from paragraph metadata"""
 
-        # Determine category depth from paragraph ilvl xpath
-        xpath = paragraph._element.xpath("./w:pPr/w:numPr/w:ilvl/@w:val")
-        if xpath:
+        if xpath := paragraph._element.xpath("./w:pPr/w:numPr/w:ilvl/@w:val"):
             return int(xpath[0])
 
         # Determine category depth from style name
         style_name = (paragraph.style and paragraph.style.name) or "Normal"
         depth = self._parse_category_depth_by_style_name(style_name)
 
-        if depth > 0:
-            return depth
-        else:
-            # Check if category depth can be determined from style ilvl
-            return self._parse_category_depth_by_style_ilvl()
+        return depth if depth > 0 else self._parse_category_depth_by_style_ilvl()
 
     def _parse_category_depth_by_style_name(self, style_name: str) -> int:
         """Parse category-depth from the style-name of `paragraph`.

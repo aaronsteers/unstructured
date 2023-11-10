@@ -160,13 +160,7 @@ class OutlookIngestDoc(IngestDocCleanupMixin, BaseIngestDoc):
                 logger.debug(f"Creating directory: {self.download_dir}")
                 self.download_dir.mkdir(parents=True, exist_ok=True)
 
-            with open(
-                os.path.join(
-                    self.download_dir,
-                    self.hash_mail_name(self.message_id) + ".eml",
-                ),
-                "wb",
-            ) as local_file:
+            with open(os.path.join(self.download_dir, f"{self.hash_mail_name(self.message_id)}.eml"), "wb") as local_file:
                 self._run_download(local_file=local_file)
 
         except Exception as e:
@@ -257,15 +251,13 @@ class OutlookSourceConnector(SourceConnectorCleanupMixin, BaseSourceConnector):
 
         # Get all the relevant messages in the selected folders/subfolders.
         for folder_id in self.selected_folder_ids:
-            messages = (
+            if messages := (
                 self.client.users[self.connector_config.user_email]
                 .mail_folders[folder_id]
                 .messages.get()
                 .top(MAX_NUM_EMAILS)  # Prevents the return from paging
                 .execute_query()
-            )
-            # Skip empty list if there are no messages in folder.
-            if messages:
+            ):
                 filtered_messages.append(messages)
         return [
             OutlookIngestDoc(

@@ -51,7 +51,7 @@ def get_docx_metadata(
     else:
         raise FileNotFoundError("No filename nor file were specified")
 
-    metadata = Metadata(
+    return Metadata(
         author=getattr(doc.core_properties, "author", ""),
         category=getattr(doc.core_properties, "category", ""),
         comments=getattr(doc.core_properties, "comments", ""),
@@ -69,8 +69,6 @@ def get_docx_metadata(
         version=getattr(doc.core_properties, "version", ""),
     )
 
-    return metadata
-
 
 @requires_dependencies("openpyxl")
 def get_xlsx_metadata(
@@ -87,7 +85,7 @@ def get_xlsx_metadata(
     else:
         raise FileNotFoundError("No filename nor file were specified")
 
-    metadata = Metadata(
+    return Metadata(
         author=getattr(workbook.properties, "creator", ""),
         category=getattr(workbook.properties, "category", ""),
         content_status=getattr(workbook.properties, "contentStatus", ""),
@@ -105,8 +103,6 @@ def get_xlsx_metadata(
         title=getattr(workbook.properties, "title", ""),
         version=getattr(workbook.properties, "version", ""),
     )
-
-    return metadata
 
 
 @requires_dependencies("PIL")
@@ -132,7 +128,7 @@ def get_jpg_metadata(
         data = exif_data.get(tag_id)
         exif_dict[tag] = data
 
-    metadata = Metadata(
+    return Metadata(
         author=exif_dict.get("Artist", ""),
         comments=exif_dict.get("UserComment", ""),
         created=_get_exif_datetime(exif_dict, "DateTimeOriginal"),
@@ -141,8 +137,6 @@ def get_jpg_metadata(
         modified=_get_exif_datetime(exif_dict, "DateTime"),
         exif_data=exif_dict,
     )
-
-    return metadata
 
 
 def _get_exif_datetime(exif_dict: Dict[str, Any], key: str) -> Optional[datetime.datetime]:

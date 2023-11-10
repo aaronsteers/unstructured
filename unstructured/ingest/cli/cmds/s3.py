@@ -18,7 +18,7 @@ class S3CliConfig(CliConfig):
 
     @staticmethod
     def get_cli_options() -> t.List[click.Option]:
-        options = [
+        return [
             click.Option(
                 ["--anonymous"],
                 is_flag=True,
@@ -33,16 +33,13 @@ class S3CliConfig(CliConfig):
                 "connecting to non-AWS S3 buckets.",
             ),
         ]
-        return options
 
 
 def get_base_src_cmd():
-    cmd_cls = BaseSrcCmd(cmd_name=CMD_NAME, cli_config=S3CliConfig, is_fsspec=True)
-    return cmd_cls
+    return BaseSrcCmd(cmd_name=CMD_NAME, cli_config=S3CliConfig, is_fsspec=True)
 
 
 def get_base_dest_cmd():
     from unstructured.ingest.cli.base.dest import BaseDestCmd
 
-    cmd_cls = BaseDestCmd(cmd_name=CMD_NAME, cli_config=S3CliConfig, is_fsspec=True)
-    return cmd_cls
+    return BaseDestCmd(cmd_name=CMD_NAME, cli_config=S3CliConfig, is_fsspec=True)

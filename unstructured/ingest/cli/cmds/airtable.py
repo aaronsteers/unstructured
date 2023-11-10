@@ -15,7 +15,7 @@ class AirtableCliConfig(CliConfig):
 
     @staticmethod
     def get_cli_options() -> t.List[click.Option]:
-        options = [
+        return [
             click.Option(
                 ["--personal-access-token"],
                 default=None,
@@ -59,9 +59,7 @@ class AirtableCliConfig(CliConfig):
                 """,
             ),
         ]
-        return options
 
 
 def get_base_src_cmd() -> BaseSrcCmd:
-    cmd_cls = BaseSrcCmd(cmd_name="airtable", cli_config=AirtableCliConfig)
-    return cmd_cls
+    return BaseSrcCmd(cmd_name="airtable", cli_config=AirtableCliConfig)

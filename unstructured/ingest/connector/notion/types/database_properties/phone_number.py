@@ -31,6 +31,4 @@ class PhoneNumberCell(DBCellBase):
         return cls(**data)
 
     def get_html(self) -> Optional[HtmlTag]:
-        if phone_number := self.phone_number:
-            return Div([], phone_number)
-        return None
+        return Div([], phone_number) if (phone_number := self.phone_number) else None

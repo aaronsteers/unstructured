@@ -22,7 +22,7 @@ class OutlookCliConfig(CliConfig):
 
     @staticmethod
     def get_cli_options() -> t.List[click.Option]:
-        options = [
+        return [
             click.Option(
                 ["--client-id"],
                 required=True,
@@ -61,13 +61,11 @@ class OutlookCliConfig(CliConfig):
                 "https://login.microsoftonline.com",
             ),
         ]
-        return options
 
 
 def get_base_src_cmd() -> BaseSrcCmd:
-    cmd_cls = BaseSrcCmd(
+    return BaseSrcCmd(
         cmd_name="outlook",
         cli_config=OutlookCliConfig,
         additional_cli_options=[CliRecursiveConfig],
     )
-    return cmd_cls

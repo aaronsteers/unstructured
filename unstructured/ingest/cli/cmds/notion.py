@@ -21,7 +21,7 @@ class NotionCliConfig(CliConfig):
 
     @staticmethod
     def get_cli_options() -> t.List[click.Option]:
-        options = [
+        return [
             click.Option(
                 ["--notion-api-key"],
                 required=True,
@@ -41,13 +41,11 @@ class NotionCliConfig(CliConfig):
                 help="Notion database IDs to pull text from",
             ),
         ]
-        return options
 
 
 def get_base_src_cmd() -> BaseSrcCmd:
-    cmd_cls = BaseSrcCmd(
+    return BaseSrcCmd(
         cmd_name="notion",
         cli_config=NotionCliConfig,
         additional_cli_options=[CliRecursiveConfig],
     )
-    return cmd_cls

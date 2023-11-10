@@ -24,6 +24,4 @@ class LinkToPage(BlockBase):
     def get_html(self) -> Optional[HtmlTag]:
         if page_id := self.page_id:
             return Div([], page_id)
-        if database_id := self.database_id:
-            return Div([], database_id)
-        return None
+        return Div([], database_id) if (database_id := self.database_id) else None

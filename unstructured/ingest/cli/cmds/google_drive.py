@@ -19,7 +19,7 @@ class GoogleDriveCliConfig(CliConfig):
 
     @staticmethod
     def get_cli_options() -> t.List[click.Option]:
-        options = [
+        return [
             click.Option(
                 ["--drive-id"],
                 required=True,
@@ -40,13 +40,11 @@ class GoogleDriveCliConfig(CliConfig):
                 help="Filters the files to be processed based on extension e.g. .jpg, .docx, etc.",
             ),
         ]
-        return options
 
 
 def get_base_src_cmd() -> BaseSrcCmd:
-    cmd_cls = BaseSrcCmd(
+    return BaseSrcCmd(
         cmd_name="google-drive",
         cli_config=GoogleDriveCliConfig,
         additional_cli_options=[CliRecursiveConfig],
     )
-    return cmd_cls

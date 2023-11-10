@@ -97,9 +97,9 @@ class SalesforceIngestDoc(IngestDocCleanupMixin, BaseIngestDoc):
 
     def _tmp_download_file(self) -> Path:
         if self.record_type == "EmailMessage":
-            record_file = self.record_id + ".eml"
+            record_file = f"{self.record_id}.eml"
         elif self.record_type in ["Account", "Lead", "Case", "Campaign"]:
-            record_file = self.record_id + ".xml"
+            record_file = f"{self.record_id}.xml"
         else:
             raise MissingCategoryError(
                 f"There are no categories with the name: {self.record_type}",
@@ -108,7 +108,7 @@ class SalesforceIngestDoc(IngestDocCleanupMixin, BaseIngestDoc):
 
     @property
     def _output_filename(self) -> Path:
-        record_file = self.record_id + ".json"
+        record_file = f"{self.record_id}.json"
         return Path(self.processor_config.output_dir) / self.record_type / record_file
 
     def _create_full_tmp_dir_path(self):
@@ -160,11 +160,10 @@ class SalesforceIngestDoc(IngestDocCleanupMixin, BaseIngestDoc):
         # Get record from Salesforce based on id
         response = self._get_response()
         logger.debug(f"response from salesforce record request: {response}")
-        records = response["records"]
-        if not records:
+        if records := response["records"]:
+            return records[0]
+        else:
             raise ValueError(f"No record found with record id {self.record_id}: {response}")
-        record_json = records[0]
-        return record_json
 
     def update_source_metadata(self) -> None:  # type: ignore
         record_json = self.record
@@ -254,16 +253,16 @@ class SalesforceSourceConnector(SourceConnectorCleanupMixin, BaseSourceConnector
                 records = client.query_all(
                     f"select Id from {record_type}",
                 )
-                for record in records["records"]:
-                    ingest_docs.append(
-                        SalesforceIngestDoc(
-                            connector_config=self.connector_config,
-                            processor_config=self.processor_config,
-                            read_config=self.read_config,
-                            record_type=record_type,
-                            record_id=record["Id"],
-                        ),
+                ingest_docs.extend(
+                    SalesforceIngestDoc(
+                        connector_config=self.connector_config,
+                        processor_config=self.processor_config,
+                        read_config=self.read_config,
+                        record_type=record_type,
+                        record_id=record["Id"],
                     )
+                    for record in records["records"]
+                )
             except SalesforceMalformedRequest as e:
                 raise SalesforceMalformedRequest(f"Problem with Salesforce query: {e}")
 

@@ -27,7 +27,7 @@ def projection_by_bboxes(boxes: np.ndarray, axis: int) -> np.ndarray:
         want to find the interval of the text box)
     """
 
-    assert axis in [0, 1]
+    assert axis in {0, 1}
     length = np.max(boxes[:, axis::2])
     res = np.zeros(length, dtype=int)
     # TODO: how to remove for loop?
@@ -69,7 +69,7 @@ def split_projection_profile(arr_values: np.ndarray, min_value: float, min_gap: 
     # find zero intervals between adjacent projections
     # |  |                    ||
     # ||||<- zero-interval -> |||||
-    arr_diff = arr_index[1:] - arr_index[0:-1]
+    arr_diff = arr_index[1:] - arr_index[:-1]
     arr_diff_index = np.where(arr_diff > min_gap)[0]
     arr_zero_intvl_start = arr_index[arr_diff_index]
     arr_zero_intvl_end = arr_index[arr_diff_index + 1]
@@ -323,5 +323,4 @@ def vis_points(
 
 def vis_polygons_with_index(image, points):
     texts = [str(i) for i in range(len(points))]
-    res_img = vis_points(image.copy(), points, texts)
-    return res_img
+    return vis_points(image.copy(), points, texts)

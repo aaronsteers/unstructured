@@ -244,17 +244,14 @@ class _PptxPartitioner:  # pyright: ignore[reportUnusedClass]
         # -- not all notes slides have a text-frame (it's created on first use) --
         if not notes_text_frame:
             return
-        notes_text = notes_text_frame.text.strip()
-
-        # -- not all notes text-frams contain text (if it's all deleted the text-frame remains) --
-        if not notes_text:
+        if notes_text := notes_text_frame.text.strip():
+            yield NarrativeText(
+                text=notes_text,
+                metadata=self._text_metadata(),
+                detection_origin=DETECTION_ORIGIN,
+            )
+        else:
             return
-
-        yield NarrativeText(
-            text=notes_text,
-            metadata=self._text_metadata(),
-            detection_origin=DETECTION_ORIGIN,
-        )
 
     def _is_invalid_shape(self, shape: Shape) -> bool:
         # NOTE(robinson) - avoid processing shapes that are not on the actual slide

@@ -49,7 +49,7 @@ class TestIngestDoc(BaseIngestDoc):
 
     @property
     def _output_filename(self):
-        return TEST_FILE_PATH + ".json"
+        return f"{TEST_FILE_PATH}.json"
 
     @property
     def source_url(self) -> str:
@@ -90,8 +90,7 @@ class TestIngestDoc(BaseIngestDoc):
 
 @pytest.fixture()
 def partition_test_results():
-    # Reusable partition test results, calculated only once
-    result = partition(
+    return partition(
         filename=str(TEST_FILE_PATH),
         data_source_metadata=DataSourceMetadata(
             url=TEST_SOURCE_URL,
@@ -102,7 +101,6 @@ def partition_test_results():
             date_processed=TEST_DATE_PROCESSSED,
         ),
     )
-    return result
 
 
 @pytest.fixture()

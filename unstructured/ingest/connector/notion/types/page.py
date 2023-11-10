@@ -32,7 +32,7 @@ class Page(FromJSONMixin):
         icon = data.pop("icon")
         cover = data.pop("cover")
         parent = data.pop("parent")
-        page = cls(
+        return cls(
             created_by=PartialUser.from_dict(created_by),
             last_edited_by=PartialUser.from_dict(last_edited_by),
             icon=FileObject.from_dict(icon) if icon else None,
@@ -40,5 +40,3 @@ class Page(FromJSONMixin):
             parent=Parent.from_dict(parent),
             **data,
         )
-
-        return page

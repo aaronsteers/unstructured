@@ -65,7 +65,7 @@ def measure_text_edit_distance(
     for doc in output_list:  # type: ignore
         fn = (doc.split("/")[-1]).split(".json")[0]
         doctype = fn.rsplit(".", 1)[-1]
-        fn_txt = fn + ".txt"
+        fn_txt = f"{fn}.txt"
         connector = doc.split("/")[0]
 
         if fn_txt in source_list:  # type: ignore
@@ -81,16 +81,15 @@ def measure_text_edit_distance(
     headers = ["filename", "doctype", "connector", "cct-accuracy", "cct-%missing"]
     _write_to_file(export_dir, "all-docs-cct.tsv", rows, headers)
 
-    agg_rows = []
-    agg_rows.append(
+    agg_rows = [
         [
             "cct-accuracy",
             _mean(accuracy_scores),
             _stdev(accuracy_scores),
             _pstdev(accuracy_scores),
             len(accuracy_scores),
-        ],
-    )
+        ]
+    ]
     agg_rows.append(
         [
             "cct-%missing",
@@ -141,16 +140,15 @@ def measure_element_type_accuracy(
     headers = ["filename", "doctype", "connector", "element-type-accuracy"]
     _write_to_file(export_dir, "all-docs-element-type-frequency.tsv", rows, headers)
 
-    agg_rows = []
-    agg_rows.append(
+    agg_rows = [
         [
             "element-type-accuracy",
             _mean(accuracy_scores),
             _stdev(accuracy_scores),
             _pstdev(accuracy_scores),
             len(accuracy_scores),
-        ],
-    )
+        ]
+    ]
     _write_to_file(export_dir, "aggregate-scores-element-type.tsv", agg_rows, agg_headers)
     _display(agg_rows, agg_headers)
 
@@ -199,15 +197,13 @@ def _write_to_file(dir: str, filename: str, rows: List[Any], headers: List[Any],
 
 
 def _mean(scores: List[float], rounding: Optional[int] = 3):
-    if len(scores) < 1:
+    if not scores:
         return None
     elif len(scores) == 1:
         mean = scores[0]
     else:
         mean = statistics.mean(scores)
-    if not rounding:
-        return mean
-    return round(mean, rounding)
+    return mean if not rounding else round(mean, rounding)
 
 
 def _stdev(scores: List[float], rounding: Optional[int] = 3):

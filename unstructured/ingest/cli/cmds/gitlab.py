@@ -18,7 +18,7 @@ class GitlabCliConfig(CliConfig):
 
     @staticmethod
     def get_cli_options() -> t.List[click.Option]:
-        options = [
+        return [
             click.Option(
                 ["--url"],
                 required=True,
@@ -49,9 +49,7 @@ class GitlabCliConfig(CliConfig):
                 "files are accepted, e.g. '*.html,*.txt'",
             ),
         ]
-        return options
 
 
 def get_base_src_cmd() -> BaseSrcCmd:
-    cmd_cls = BaseSrcCmd(cmd_name="gitlab", cli_config=GitlabCliConfig)
-    return cmd_cls
+    return BaseSrcCmd(cmd_name="gitlab", cli_config=GitlabCliConfig)

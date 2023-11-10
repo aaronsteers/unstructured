@@ -177,8 +177,7 @@ def test_partition_html_from_file_rb_default_encoding(filename):
 
 def test_partition_html_from_text():
     filename = os.path.join(DIRECTORY, "..", "..", "example-docs", "example-10k.html")
-    with open(filename) as f:
-        text = f.read()
+    text = pathlib.Path(filename).read_text()
     elements = partition_html(text=text)
     assert len(elements) > 0
 
@@ -197,9 +196,7 @@ class MockResponse:
 
 def test_partition_html_from_url():
     filename = os.path.join(DIRECTORY, "..", "..", "example-docs", "example-10k.html")
-    with open(filename) as f:
-        text = f.read()
-
+    text = pathlib.Path(filename).read_text()
     response = MockResponse(
         text=text,
         status_code=200,
@@ -213,9 +210,7 @@ def test_partition_html_from_url():
 
 def test_partition_html_from_url_raises_with_bad_status_code():
     filename = os.path.join(DIRECTORY, "..", "..", "example-docs", "example-10k.html")
-    with open(filename) as f:
-        text = f.read()
-
+    text = pathlib.Path(filename).read_text()
     response = MockResponse(
         text=text,
         status_code=500,
@@ -227,9 +222,7 @@ def test_partition_html_from_url_raises_with_bad_status_code():
 
 def test_partition_html_from_url_raises_with_bad_content_type():
     filename = os.path.join(DIRECTORY, "..", "..", "example-docs", "example-10k.html")
-    with open(filename) as f:
-        text = f.read()
-
+    text = pathlib.Path(filename).read_text()
     response = MockResponse(
         text=text,
         status_code=200,
@@ -265,9 +258,7 @@ def test_partition_html_raises_with_none_specified():
 
 def test_partition_html_raises_with_too_many_specified():
     filename = os.path.join(DIRECTORY, "..", "..", "example-docs", "example-10k.html")
-    with open(filename) as f:
-        text = f.read()
-
+    text = pathlib.Path(filename).read_text()
     with pytest.raises(ValueError):
         partition_html(filename=filename, text=text)
 

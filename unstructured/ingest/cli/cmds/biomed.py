@@ -19,7 +19,7 @@ class BiomedCliConfig(CliConfig):
 
     @staticmethod
     def get_cli_options() -> t.List[click.Option]:
-        options = [
+        return [
             click.Option(
                 ["--api-id"],
                 default=None,
@@ -46,9 +46,7 @@ class BiomedCliConfig(CliConfig):
                 help="(In seconds) Max request time to OA Web Service API.",
             ),
         ]
-        return options
 
 
 def get_base_src_cmd() -> BaseSrcCmd:
-    cmd_cls = BaseSrcCmd(cmd_name="biomed", cli_config=BiomedCliConfig)
-    return cmd_cls
+    return BaseSrcCmd(cmd_name="biomed", cli_config=BiomedCliConfig)

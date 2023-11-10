@@ -9,7 +9,7 @@ def get_element_type_frequency(
     Calculate the frequency of Element Types from a list of elements.
     """
     frequency: Dict = {}
-    if len(elements) == 0:
+    if not elements:
         return frequency
     for element in json.loads(elements):
         type = element.get("type")

@@ -32,6 +32,4 @@ class TitleCell(DBCellBase):
         return cls(title=[RichText.from_dict(rt) for rt in data.pop("title", [])], **data)
 
     def get_html(self) -> Optional[HtmlTag]:
-        if not self.title:
-            return None
-        return Div([], [rt.get_html() for rt in self.title])
+        return Div([], [rt.get_html() for rt in self.title]) if self.title else None

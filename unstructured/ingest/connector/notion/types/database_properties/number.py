@@ -44,6 +44,4 @@ class NumberCell(DBCellBase):
         return cls(**data)
 
     def get_html(self) -> Optional[HtmlTag]:
-        if number := self.number:
-            return Div([], str(number))
-        return None
+        return Div([], str(number)) if (number := self.number) else None

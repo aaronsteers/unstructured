@@ -116,17 +116,17 @@ class CliMixin:
         options_to_add = cls.get_cli_options()
         CliMixin.add_params(cmd, params=options_to_add)
 
-    def add_params(cmd: click.Command, params: t.List[click.Parameter]):
+    def add_params(self, params: t.List[click.Parameter]):
         existing_opts = []
-        for param in cmd.params:
+        for param in self.params:
             existing_opts.extend(param.opts)
 
         for param in params:
             for opt in param.opts:
                 if opt in existing_opts:
-                    raise ValueError(f"{opt} is already defined on the command {cmd.name}")
+                    raise ValueError(f"{opt} is already defined on the command {self.name}")
                 existing_opts.append(opt)
-                cmd.params.append(param)
+                self.params.append(param)
 
 
 class CliConfig(BaseConfig, CliMixin):
@@ -136,7 +136,7 @@ class CliConfig(BaseConfig, CliMixin):
 class CliRetryStrategyConfig(RetryStrategyConfig, CliMixin):
     @staticmethod
     def get_cli_options() -> t.List[click.Option]:
-        options = [
+        return [
             click.Option(
                 ["--max-retries"],
                 default=None,
@@ -152,7 +152,6 @@ class CliRetryStrategyConfig(RetryStrategyConfig, CliMixin):
                 "of back off strategy if http calls fail",
             ),
         ]
-        return options
 
     @classmethod
     def from_dict(
@@ -175,7 +174,7 @@ class CliRetryStrategyConfig(RetryStrategyConfig, CliMixin):
 class CliProcessorConfig(ProcessorConfig, CliMixin):
     @staticmethod
     def get_cli_options() -> t.List[click.Option]:
-        options = [
+        return [
             click.Option(
                 ["--reprocess"],
                 is_flag=True,
@@ -192,7 +191,13 @@ class CliProcessorConfig(ProcessorConfig, CliMixin):
                 ["--work-dir"],
                 type=str,
                 default=str(
-                    (Path.home() / ".cache" / "unstructured" / "ingest" / "pipeline").resolve(),
+                    (
+                        Path.home()
+                        / ".cache"
+                        / "unstructured"
+                        / "ingest"
+                        / "pipeline"
+                    ).resolve(),
                 ),
                 show_default=True,
                 help="Where to place working files when processing each step",
@@ -212,13 +217,12 @@ class CliProcessorConfig(ProcessorConfig, CliMixin):
             ),
             click.Option(["-v", "--verbose"], is_flag=True, default=False),
         ]
-        return options
 
 
 class CliReadConfig(ReadConfig, CliMixin):
     @staticmethod
     def get_cli_options() -> t.List[click.Option]:
-        options = [
+        return [
             click.Option(
                 ["--download-dir"],
                 help="Where files are downloaded to, defaults to a location at"
@@ -253,18 +257,18 @@ class CliReadConfig(ReadConfig, CliMixin):
                 help="If specified, process at most the specified number of documents.",
             ),
         ]
-        return options
 
 
 class CliPartitionConfig(PartitionConfig, CliMixin):
     @staticmethod
     def get_cli_options() -> t.List[click.Option]:
-        options = [
+        return [
             click.Option(
                 ["--pdf-infer-table-structure"],
                 is_flag=True,
                 default=False,
-                help="Partition will include the table's text_as_html " "in the response metadata.",
+                help="Partition will include the table's text_as_html "
+                "in the response metadata.",
             ),
             click.Option(
                 ["--strategy"],
@@ -351,7 +355,6 @@ class CliPartitionConfig(PartitionConfig, CliMixin):
                 help="Model name for hi-res strategy.",
             ),
         ]
-        return options
 
 
 class CliRecursiveConfig(CliConfig):
@@ -359,7 +362,7 @@ class CliRecursiveConfig(CliConfig):
 
     @staticmethod
     def get_cli_options() -> t.List[click.Option]:
-        options = [
+        return [
             click.Option(
                 ["--recursive"],
                 is_flag=True,
@@ -368,13 +371,12 @@ class CliRecursiveConfig(CliConfig):
                 "otherwise stop at the files in provided folder level.",
             ),
         ]
-        return options
 
 
 class CliFilesStorageConfig(FileStorageConfig, CliMixin):
     @staticmethod
     def get_cli_options() -> t.List[click.Option]:
-        options = [
+        return [
             click.Option(
                 ["--remote-url"],
                 required=True,
@@ -396,7 +398,6 @@ class CliFilesStorageConfig(FileStorageConfig, CliMixin):
                 "otherwise stop at the files in provided folder level.",
             ),
         ]
-        return options
 
 
 class CliEmbeddingConfig(EmbeddingConfig, CliMixin):
@@ -404,7 +405,7 @@ class CliEmbeddingConfig(EmbeddingConfig, CliMixin):
     def get_cli_options() -> t.List[click.Option]:
         from unstructured.embed import EMBEDDING_PROVIDER_TO_CLASS_MAP
 
-        options = [
+        return [
             click.Option(
                 ["--embedding-provider"],
                 help="Type of the embedding class to be used. Can be one of: "
@@ -425,7 +426,6 @@ class CliEmbeddingConfig(EmbeddingConfig, CliMixin):
                 default=None,
             ),
         ]
-        return options
 
     @classmethod
     def from_dict(
@@ -456,7 +456,7 @@ class CliEmbeddingConfig(EmbeddingConfig, CliMixin):
 class CliChunkingConfig(ChunkingConfig, CliMixin):
     @staticmethod
     def get_cli_options() -> t.List[click.Option]:
-        options = [
+        return [
             click.Option(
                 ["--chunk-elements"],
                 is_flag=True,
@@ -480,7 +480,6 @@ class CliChunkingConfig(ChunkingConfig, CliMixin):
                 show_default=True,
             ),
         ]
-        return options
 
     @classmethod
     def from_dict(
@@ -494,30 +493,30 @@ class CliChunkingConfig(ChunkingConfig, CliMixin):
         This allows CLI arguments to be prepended with chunking_ during CLI invocation but
         doesn't require that as part of the field names in this class
         """
-        if isinstance(kvs, dict):
-            new_kvs = {}
-            if "chunk_elements" in kvs:
-                chunk_elements = kvs.pop("chunk_elements")
-                if not chunk_elements:
-                    return None
+        if not isinstance(kvs, dict):
+            return _decode_dataclass(cls, kvs, infer_missing)
+        new_kvs = {}
+        if "chunk_elements" in kvs:
+            if chunk_elements := kvs.pop("chunk_elements"):
                 new_kvs["chunk_elements"] = chunk_elements
-            new_kvs.update(
-                {
-                    k[len("chunking_") :]: v  # noqa: E203
-                    for k, v in kvs.items()
-                    if k.startswith("chunking_")
-                },
-            )
-            if len(new_kvs.keys()) == 0:
+            else:
                 return None
-            return _decode_dataclass(cls, new_kvs, infer_missing)
-        return _decode_dataclass(cls, kvs, infer_missing)
+        new_kvs.update(
+            {
+                k[len("chunking_") :]: v  # noqa: E203
+                for k, v in kvs.items()
+                if k.startswith("chunking_")
+            },
+        )
+        if len(new_kvs.keys()) == 0:
+            return None
+        return _decode_dataclass(cls, new_kvs, infer_missing)
 
 
 class CliPermissionsConfig(PermissionsConfig, CliMixin):
     @staticmethod
     def get_cli_options() -> t.List[click.Option]:
-        options = [
+        return [
             click.Option(
                 ["--permissions-application-id"],
                 type=str,
@@ -534,7 +533,6 @@ class CliPermissionsConfig(PermissionsConfig, CliMixin):
                 help="e.g https://contoso.onmicrosoft.com to get permissions data within tenant.",
             ),
         ]
-        return options
 
     @classmethod
     def from_dict(
@@ -550,29 +548,29 @@ class CliPermissionsConfig(PermissionsConfig, CliMixin):
         CLI params are provided as intended.
         """
 
-        if isinstance(kvs, dict):
-            permissions_application_id = kvs.get("permissions_application_id")
-            permissions_client_cred = kvs.get("permissions_client_cred")
-            permissions_tenant = kvs.get("permissions_tenant")
-            permission_values = [
-                permissions_application_id,
-                permissions_client_cred,
-                permissions_tenant,
-            ]
-            if any(permission_values) and not all(permission_values):
-                raise ValueError(
-                    "Please provide either none or all of the following optional values:\n"
-                    "--permissions-application-id\n"
-                    "--permissions-client-cred\n"
-                    "--permissions-tenant",
-                )
+        if not isinstance(kvs, dict):
+            return _decode_dataclass(cls, kvs, infer_missing)
+        permissions_application_id = kvs.get("permissions_application_id")
+        permissions_client_cred = kvs.get("permissions_client_cred")
+        permissions_tenant = kvs.get("permissions_tenant")
+        permission_values = [
+            permissions_application_id,
+            permissions_client_cred,
+            permissions_tenant,
+        ]
+        if any(permission_values) and not all(permission_values):
+            raise ValueError(
+                "Please provide either none or all of the following optional values:\n"
+                "--permissions-application-id\n"
+                "--permissions-client-cred\n"
+                "--permissions-tenant",
+            )
 
-            new_kvs = {
-                k[len("permissions_") :]: v  # noqa: E203
-                for k, v in kvs.items()
-                if k.startswith("permissions_")
-            }
-            if len(new_kvs.keys()) == 0:
-                return None
-            return _decode_dataclass(cls, new_kvs, infer_missing)
-        return _decode_dataclass(cls, kvs, infer_missing)
+        new_kvs = {
+            k[len("permissions_") :]: v  # noqa: E203
+            for k, v in kvs.items()
+            if k.startswith("permissions_")
+        }
+        if len(new_kvs.keys()) == 0:
+            return None
+        return _decode_dataclass(cls, new_kvs, infer_missing)

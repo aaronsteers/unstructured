@@ -97,9 +97,7 @@ def partition_xlsx(
         last_modification_date = get_last_modified_date_from_file(file)
 
     elements: List[Element] = []
-    page_number = 0
-    for sheet_name, sheet in sheets.items():
-        page_number += 1
+    for page_number, (sheet_name, sheet) in enumerate(sheets.items(), start=1):
         if not find_subtable:
             html_text = (
                 sheet.to_html(index=False, header=include_header, na_rep="")
@@ -261,20 +259,18 @@ def _filter_overlapping_tables(
     for component in sorted_components:
         if current_component is None:
             current_component = component
+        elif component["min_x"] <= current_component["max_x"]:
+            # Merge the components and update min_x, max_x
+            current_component["component"].extend(component["component"])
+            current_component["min_x"] = min(current_component["min_x"], component["min_x"])
+            current_component["max_x"] = max(current_component["max_x"], component["max_x"])
+            current_component["min_y"] = min(current_component["min_y"], component["min_y"])
+            current_component["max_y"] = max(current_component["max_y"], component["max_y"])
         else:
-            # Check if component overlaps with the current_component
-            if component["min_x"] <= current_component["max_x"]:
-                # Merge the components and update min_x, max_x
-                current_component["component"].extend(component["component"])
-                current_component["min_x"] = min(current_component["min_x"], component["min_x"])
-                current_component["max_x"] = max(current_component["max_x"], component["max_x"])
-                current_component["min_y"] = min(current_component["min_y"], component["min_y"])
-                current_component["max_y"] = max(current_component["max_y"], component["max_y"])
-            else:
-                # No overlap, add the current_component to the merged list
-                merged_components.append(current_component)
-                # Update the current_component
-                current_component = component
+            # No overlap, add the current_component to the merged list
+            merged_components.append(current_component)
+            # Update the current_component
+            current_component = component
     # Append the last current_component to the merged list
     if current_component is not None:
         merged_components.append(current_component)
@@ -308,9 +304,11 @@ def _get_sub_subtable(subtable: pd.DataFrame, first_and_last_row: Tuple[int, int
     # two consecutive rows contains full row of cells.
     # if yes, it might not be a header. We should check the length.
     first_row, last_row = first_and_last_row
-    if last_row == first_row:
-        return None
-    return subtable.iloc[first_row : last_row + 1]  # noqa: E203
+    return (
+        None
+        if last_row == first_row
+        else subtable.iloc[first_row : last_row + 1]
+    )
 
 
 def _find_first_and_last_non_consecutive_row(
@@ -385,13 +383,13 @@ def _get_metadata(
     last_modification_date: Union[str, None] = None,
 ) -> ElementMetadata:
     """Returns metadata depending on `include_metadata` flag"""
-    if include_metadata:
-        metadata = ElementMetadata(
+    return (
+        ElementMetadata(
             page_name=sheet_name,
             page_number=page_number,
             filename=filename,
             last_modified=last_modification_date,
         )
-    else:
-        metadata = ElementMetadata()
-    return metadata
+        if include_metadata
+        else ElementMetadata()
+    )

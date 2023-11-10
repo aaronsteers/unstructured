@@ -53,10 +53,10 @@ class SelectCell(DBCellBase):
 
     @classmethod
     def from_dict(cls, data: dict):
-        select_data = data.pop("select")
-        select = None
-        if select_data:
+        if select_data := data.pop("select"):
             select = SelectOption.from_dict(select_data)
+        else:
+            select = None
         return cls(select=select, **data)
 
     def get_html(self) -> Optional[HtmlTag]:

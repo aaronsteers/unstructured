@@ -199,17 +199,17 @@ def extract_msg_attachment_info(
     list_attachments = []
 
     for attachment in msg_obj.attachments:
-        attachment_info = {}
-
-        attachment_info["filename"] = attachment.AttachLongFilename
-        attachment_info["extension"] = attachment.AttachExtension
-        attachment_info["file_size"] = attachment.AttachmentSize
-        attachment_info["payload"] = attachment.data
+        attachment_info = {
+            "filename": attachment.AttachLongFilename,
+            "extension": attachment.AttachExtension,
+            "file_size": attachment.AttachmentSize,
+            "payload": attachment.data,
+        }
 
         list_attachments.append(attachment_info)
 
         if output_dir is not None:
-            output_filename = output_dir + "/" + attachment_info["filename"]
+            output_filename = f"{output_dir}/" + attachment_info["filename"]
             with open(output_filename, "wb") as f:
                 f.write(attachment.data)
 

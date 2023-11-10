@@ -61,15 +61,9 @@ class PipelineNode(DataClassJsonMixin, ABC):
 
         self.initialize()
         if not self.supported_multiprocessing():
-            if iterable:
-                self.result = self.run(iterable)
-            else:
-                self.result = self.run()
+            self.result = self.run(iterable) if iterable else self.run()
         elif self.pipeline_context.num_processes == 1:
-            if iterable:
-                self.result = [self.run(it) for it in iterable]
-            else:
-                self.result = self.run()
+            self.result = [self.run(it) for it in iterable] if iterable else self.run()
         else:
             with mp.Pool(
                 processes=self.pipeline_context.num_processes,

@@ -254,13 +254,11 @@ class AirtableSourceConnector(SourceConnectorCleanupMixin, BaseSourceConnector):
             (base_id, get_base_schema(base)["tables"]) for base_id, base in bases
         ]
 
-        baseid_tableid_viewid_tuples = [
+        return [
             (base_id, table["id"], None)
             for base_id, base_metadata in metadata_for_each_base
             for table in base_metadata
         ]
-
-        return baseid_tableid_viewid_tuples
 
     def get_ingest_docs(self):
         """Fetches documents in an Airtable org."""

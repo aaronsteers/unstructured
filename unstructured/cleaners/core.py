@@ -67,10 +67,7 @@ def clean_ordered_bullets(text) -> str:
     if not bullet[-1]:
         del bullet[-1]
 
-    if len(bullet[0]) > 2:
-        return text
-
-    return text_cl
+    return text if len(bullet[0]) > 2 else text_cl
 
 
 def clean_ligatures(text) -> str:
@@ -119,17 +116,17 @@ def group_bullet_paragraph(paragraph: str) -> list:
     '''○ The big red fox is walking down the lane.
     ○ At the end of the land the fox met a bear.'''
     """
-    clean_paragraphs = []
     # pytesseract converts some bullet points to standalone "e" characters.
     # Substitute "e" with bullets since they are later used in partition_text
     # to determine list element type.
     paragraph = (re.sub(E_BULLET_PATTERN, "·", paragraph)).strip()
 
     bullet_paras = re.split(UNICODE_BULLETS_RE_0W, paragraph)
-    for bullet in bullet_paras:
-        if bullet:
-            clean_paragraphs.append(re.sub(PARAGRAPH_PATTERN, " ", bullet))
-    return clean_paragraphs
+    return [
+        re.sub(PARAGRAPH_PATTERN, " ", bullet)
+        for bullet in bullet_paras
+        if bullet
+    ]
 
 
 def group_broken_paragraphs(
@@ -192,11 +189,7 @@ def new_line_grouper(
     Iwan Roberts\n\nRoberts celebrating after scoring a goal for Norwich City\n\nin 2004
     """
     paragraphs = paragraph_split.split(text)
-    clean_paragraphs = []
-    for paragraph in paragraphs:
-        if not paragraph.strip():
-            continue
-        clean_paragraphs.append(paragraph)
+    clean_paragraphs = [paragraph for paragraph in paragraphs if paragraph.strip()]
     return "\n\n".join(clean_paragraphs)
 
 
@@ -300,8 +293,7 @@ tbl = dict.fromkeys(
 
 def remove_punctuation(s: str) -> str:
     """Removes punctuation from a given string."""
-    s = s.translate(tbl)
-    return s
+    return s.translate(tbl)
 
 
 def remove_sentence_punctuation(s: str, exclude_punctuation: Optional[list]) -> str:
@@ -309,8 +301,7 @@ def remove_sentence_punctuation(s: str, exclude_punctuation: Optional[list]) -> 
     if exclude_punctuation:
         for punct in exclude_punctuation:
             del tbl_new[ord(punct)]
-    s = s.translate(tbl_new)
-    return s
+    return s.translate(tbl_new)
 
 
 def clean_extra_whitespace(text: str) -> str:
@@ -423,7 +414,7 @@ def clean(
 def bytes_string_to_string(text: str, encoding: str = "utf-8"):
     """Converts a string representation of a byte string to a regular string using the
     specified encoding."""
-    text_bytes = bytes([ord(char) for char in text])
+    text_bytes = bytes(ord(char) for char in text)
     formatted_encoding = format_encoding_str(encoding)
     return text_bytes.decode(formatted_encoding)
 

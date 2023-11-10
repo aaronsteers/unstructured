@@ -247,11 +247,12 @@ def detect_filetype(
         _filename = filename or file_filename or ""
         _, extension = os.path.splitext(_filename)
         extension = extension.lower()
-        if os.path.isfile(_filename) and LIBMAGIC_AVAILABLE:
-            mime_type = magic.from_file(
-                _resolve_symlink(filename or file_filename),
-                mime=True,
-            )  # type: ignore
+        if LIBMAGIC_AVAILABLE:
+            if os.path.isfile(_filename):
+                mime_type = magic.from_file(
+                    _resolve_symlink(filename or file_filename),
+                    mime=True,
+                )  # type: ignore
         elif os.path.isfile(_filename):
             import filetype as ft
 
@@ -292,11 +293,7 @@ def detect_filetype(
         return FileType.XLS
 
     elif mime_type.endswith("xml"):
-        if extension == ".html" or extension == ".htm":
-            return FileType.HTML
-        else:
-            return FileType.XML
-
+        return FileType.HTML if extension in [".html", ".htm"] else FileType.XML
     elif mime_type in TXT_MIME_TYPES or mime_type.startswith("text"):
         if not encoding:
             encoding = "utf-8"
@@ -375,7 +372,6 @@ def detect_filetype(
     elif mime_type.endswith("empty"):
         return FileType.EMPTY
 
-    # For everything else
     elif mime_type in STR_TO_FILETYPE:
         return STR_TO_FILETYPE[mime_type]
 
@@ -492,7 +488,7 @@ def _is_text_file_a_csv(
     lines = file_text.strip().splitlines()
     if len(lines) < 2:
         return False
-    lines = lines[: len(lines)] if len(lines) < 10 else lines[:10]
+    lines = lines[:] if len(lines) < 10 else lines[:10]
     header_count = _count_commas(lines[0])
     if any("," not in line for line in lines):
         return False

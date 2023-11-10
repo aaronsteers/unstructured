@@ -56,12 +56,12 @@ class DiscordIngestDoc(IngestDocCleanupMixin, BaseIngestDoc):
     # __post_init__ for multiprocessing simplicity (no Path objects in initially
     # instantiated object)
     def _tmp_download_file(self):
-        channel_file = self.channel + ".txt"
+        channel_file = f"{self.channel}.txt"
         return Path(self.read_config.download_dir) / channel_file
 
     @property
     def _output_filename(self):
-        output_file = self.channel + ".json"
+        output_file = f"{self.channel}.json"
         return Path(self.processor_config.output_dir) / output_file
 
     def _create_full_tmp_dir_path(self):

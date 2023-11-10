@@ -434,17 +434,17 @@ def test_pad_element_bboxes(padding, expected_bbox):
 
 @pytest.fixture()
 def table_element():
-    table = LayoutElement.from_coords(x1=10, y1=20, x2=50, y2=70, text="I am a table", type="Table")
-    return table
+    return LayoutElement.from_coords(
+        x1=10, y1=20, x2=50, y2=70, text="I am a table", type="Table"
+    )
 
 
 @pytest.fixture()
 def mock_ocr_layout():
-    ocr_regions = [
+    return [
         TextRegion.from_coords(x1=15, y1=25, x2=35, y2=45, text="Token1"),
         TextRegion.from_coords(x1=40, y1=30, x2=45, y2=50, text="Token2"),
     ]
-    return ocr_regions
 
 
 def test_get_table_tokens(mock_ocr_layout):

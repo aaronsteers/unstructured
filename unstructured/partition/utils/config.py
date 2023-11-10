@@ -21,14 +21,10 @@ class ENVConfig:
         return os.environ.get(var, default_value)
 
     def _get_int(self, var: str, default_value: int) -> int:
-        if value := self._get_string(var):
-            return int(value)
-        return default_value
+        return int(value) if (value := self._get_string(var)) else default_value
 
     def _get_float(self, var: str, default_value: float) -> float:
-        if value := self._get_string(var):
-            return float(value)
-        return default_value
+        return float(value) if (value := self._get_string(var)) else default_value
 
     @property
     def IMAGE_CROP_PAD(self) -> int:

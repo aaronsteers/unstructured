@@ -22,9 +22,7 @@ if response.meta.status != 200:
     raise RuntimeError("failed to create index")
 
 print("Loading data into the index.")
-bulk_data = []
-for i, row in df.iterrows():
-    bulk_data.append(form_elasticsearch_doc_dict(i, row))
+bulk_data = [form_elasticsearch_doc_dict(i, row) for i, row in df.iterrows()]
 bulk(es, bulk_data)
 
 es.indices.refresh(index=INDEX_NAME)

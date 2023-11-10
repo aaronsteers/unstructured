@@ -55,7 +55,7 @@ def calculate_edit_distance(
     """
     return_types = ["score", "distance"]
     if return_as not in return_types:
-        raise ValueError("Invalid return value type. Expected one of: %s" % return_types)
+        raise ValueError(f"Invalid return value type. Expected one of: {return_types}")
     output = _prepare_str(output)
     source = _prepare_str(source)
     distance = Levenshtein.distance(output, source, weights=weights)  # type: ignore
@@ -63,10 +63,10 @@ def calculate_edit_distance(
     # in the case where source string is empty, the distance should be at 100%
     source_char_len = max(len(source), 1.0)  # type: ignore
     bounded_percentage_distance = min(max(distance / source_char_len, 0.0), 1.0)
-    if return_as == "score":
-        return 1 - bounded_percentage_distance
-    elif return_as == "distance":
+    if return_as == "distance":
         return distance
+    elif return_as == "score":
+        return 1 - bounded_percentage_distance
     return 0.0
 
 
@@ -154,6 +154,4 @@ def calculate_percent_missing_text(
 
 
 def _prepare_str(string: Optional[str]) -> str:
-    if not string:
-        return ""
-    return str(string)  # type: ignore
+    return "" if not string else str(string)

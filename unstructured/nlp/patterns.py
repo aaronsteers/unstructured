@@ -81,7 +81,7 @@ PARAGRAPH_PATTERN = r"\s*\n\s*"  # noqa: W605 NOTE(harrell)
 PARAGRAPH_PATTERN_RE = re.compile(
     f"((?:{BULLETS_PATTERN})|{PARAGRAPH_PATTERN})(?!{BULLETS_PATTERN}|$)",
 )
-DOUBLE_PARAGRAPH_PATTERN_RE = re.compile("(" + PARAGRAPH_PATTERN + "){2}")
+DOUBLE_PARAGRAPH_PATTERN_RE = re.compile(f"({PARAGRAPH_PATTERN}" + "){2}")
 
 # Captures all new line \n and keeps the \n as its own element,
 # considers \n\n as two separate elements

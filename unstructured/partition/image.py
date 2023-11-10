@@ -72,12 +72,11 @@ def partition_image(
                 "languages is preferred. ocr_languages is marked for deprecation.",
             )
 
-        else:
-            languages = convert_old_ocr_languages_to_languages(ocr_languages)
-            logger.warning(
-                "The ocr_languages kwarg will be deprecated in a future version of unstructured. "
-                "Please use languages instead.",
-            )
+        languages = convert_old_ocr_languages_to_languages(ocr_languages)
+        logger.warning(
+            "The ocr_languages kwarg will be deprecated in a future version of unstructured. "
+            "Please use languages instead.",
+        )
 
     return partition_pdf_or_image(
         filename=filename,

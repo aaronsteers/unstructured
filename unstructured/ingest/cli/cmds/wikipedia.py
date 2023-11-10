@@ -16,7 +16,7 @@ class WikipediaCliConfig(CliConfig):
 
     @staticmethod
     def get_cli_options() -> t.List[click.Option]:
-        options = [
+        return [
             click.Option(
                 ["--page-title"],
                 required=True,
@@ -31,9 +31,7 @@ class WikipediaCliConfig(CliConfig):
                 " Set to False if the wrong Wikipedia page is fetched.",
             ),
         ]
-        return options
 
 
 def get_base_src_cmd() -> BaseSrcCmd:
-    cmd_cls = BaseSrcCmd(cmd_name="wikipedia", cli_config=WikipediaCliConfig)
-    return cmd_cls
+    return BaseSrcCmd(cmd_name="wikipedia", cli_config=WikipediaCliConfig)

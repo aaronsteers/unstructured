@@ -186,8 +186,7 @@ def test_text_partition_element_metadata_user_provided_languages():
 
 def test_partition_text_from_text():
     filename = os.path.join(EXAMPLE_DOCS_DIRECTORY, "fake-text.txt")
-    with open(filename) as f:
-        text = f.read()
+    text = pathlib.Path(filename).read_text()
     elements = partition_text(text=text)
     assert len(elements) > 0
     assert elements == EXPECTED_OUTPUT
@@ -206,9 +205,7 @@ def test_partition_text_raises_with_none_specified():
 
 def test_partition_text_raises_with_too_many_specified():
     filename = os.path.join(EXAMPLE_DOCS_DIRECTORY, "fake-text.txt")
-    with open(filename) as f:
-        text = f.read()
-
+    text = pathlib.Path(filename).read_text()
     with pytest.raises(ValueError):
         partition_text(filename=filename, text=text)
 
@@ -470,9 +467,7 @@ def test_partition_text_from_file_with_custom_metadata_date(mocker: MockerFixtur
 
 def test_partition_text_from_text_metadata_date():
     filename = os.path.join(EXAMPLE_DOCS_DIRECTORY, "fake-text.txt")
-    with open(filename) as f:
-        text = f.read()
-
+    text = pathlib.Path(filename).read_text()
     elements = partition_text(
         text=text,
     )
@@ -483,9 +478,7 @@ def test_partition_text_from_text_with_custom_metadata_date():
     filename = os.path.join(EXAMPLE_DOCS_DIRECTORY, "fake-text.txt")
     expected_last_modification_date = "2020-07-05T09:24:28"
 
-    with open(filename) as f:
-        text = f.read()
-
+    text = pathlib.Path(filename).read_text()
     elements = partition_text(text=text, metadata_last_modified=expected_last_modification_date)
 
     assert elements[0].metadata.last_modified == expected_last_modification_date

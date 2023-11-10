@@ -58,7 +58,7 @@ def is_possible_narrative_text(
     if _language_checks is not None:
         language_checks = _language_checks.lower() == "true"
 
-    if len(text) == 0:
+    if not text:
         trace_logger.detail("Not narrative. Text is empty.")  # type: ignore
         return False
 
@@ -121,7 +121,7 @@ def is_possible_title(
     if _language_checks is not None:
         language_checks = _language_checks.lower() == "true"
 
-    if len(text) == 0:
+    if not text:
         trace_logger.detail("Not a title. Text is empty.")  # type: ignore
         return False
 
@@ -248,7 +248,7 @@ def under_non_alpha_ratio(text: str, threshold: float = 0.5):
         If the proportion of non-alpha characters exceeds this threshold, the function
         returns False
     """
-    if len(text) == 0:
+    if not text:
         return False
 
     alpha_count = len([char for char in text if char.strip() and char.isalpha()])
@@ -286,10 +286,10 @@ def exceeds_cap_ratio(text: str, threshold: float = 0.5) -> bool:
 
     # NOTE(jay-ylee) - If word_tokenize(text) is empty, return must be True to
     # avoid being misclassified as Narrative Text.
-    if len(tokens) == 0:
+    if not tokens:
         return True
 
-    capitalized = sum([word.istitle() or word.isupper() for word in tokens])
+    capitalized = sum(word.istitle() or word.isupper() for word in tokens)
     ratio = capitalized / len(tokens)
     return ratio > threshold
 

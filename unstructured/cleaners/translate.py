@@ -64,10 +64,9 @@ def translate_text(text, source_lang: Optional[str] = None, target_lang: str = "
 
     chunks: List[str] = chunk_by_attention_window(text, tokenizer, split_function=sent_tokenize)
 
-    translated_chunks: List[str] = []
-    for chunk in chunks:
-        translated_chunks.append(_translate_text(text, model, tokenizer))
-
+    translated_chunks: List[str] = [
+        _translate_text(text, model, tokenizer) for _ in chunks
+    ]
     return " ".join(translated_chunks)
 
 
