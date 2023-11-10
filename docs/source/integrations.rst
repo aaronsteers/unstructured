@@ -82,6 +82,19 @@ To use ``Unstructured.io File Loader`` you will need to have `LlamaIndex <https:
 See `here <https://llamahub.ai/>`__ for more LlamaHub examples.
 
 
+``Integration with Airbyte``
+--------------------------------
+
+You can use one of several Airbyte source connectors to extract text from document files, including PDF, MS Word, and Google Docs. To use this capabilitiy, select the "Unstructured Text Documents" file type in one of these supported Airbyte source connectors:
+
+- `Azure Blog Storage <https://docs.airbyte.com/integrations/sources/azure-blob-storage>`_
+- `Google Drive <https://docs.airbyte.com/integrations/sources/google-drive>`_
+- `S3 <https://docs.airbyte.com/integrations/sources/s3>`_
+
+Checkout the Airbyte tutorial `Airbyte tutorial <https://airbyte.com/blog/airbyte-now-supports-extracting-text-from-documents>`_ for a walkthrough
+on how to use the Unstructured parser to parse raw text within an Airbyte Extract-and-Load pipeline.
+
+
 ``Integration with Pandas``
 ----------------------------
 You can convert a list of ``Element`` objects to a Pandas dataframe with columns for
