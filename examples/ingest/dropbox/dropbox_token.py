@@ -25,7 +25,7 @@ def get_access_and_refresh_token():
 
     authorize_url = auth_flow.start()
     print("****************************************************")
-    print("1. Go to: " + authorize_url)
+    print(f"1. Go to: {authorize_url}")
     print('2. Click "Allow" (you might have to log in first).')
     print("3. Copy the authorization code.")
     auth_code = input("Enter the authorization code here: ").strip()
@@ -33,7 +33,7 @@ def get_access_and_refresh_token():
     try:
         oauth_result = auth_flow.finish(auth_code)
     except Exception as e:
-        print("Error: %s" % (e,))
+        print(f"Error: {e}")
         exit(1)
 
     with dropbox.Dropbox(oauth2_access_token=oauth_result.access_token) as dbx:

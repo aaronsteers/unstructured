@@ -61,30 +61,15 @@ class RetryHandler:
             log_level=giveup_log_level,
         )
         prepared_logger.debug(
-            "Initiating retry handler with "
-            "max_tries={}, "
-            "max_time={}, "
-            "exception={}, "
-            "start_log_level={}, "
-            "backoff_log_level={}, "
-            "giveup_log_level={}".format(
-                max_tries,
-                max_time,
-                ", ".join([e.__name__ for e in exception])
-                if isinstance(exception, IterableType)
-                else exception.__name__,
-                logging.getLevelName(start_log_level),
-                logging.getLevelName(backoff_log_level),
-                logging.getLevelName(giveup_log_level),
-            ),
+            f'Initiating retry handler with max_tries={max_tries}, max_time={max_time}, exception={", ".join([e.__name__ for e in exception]) if isinstance(exception, IterableType) else exception.__name__}, start_log_level={logging.getLevelName(start_log_level)}, backoff_log_level={logging.getLevelName(backoff_log_level)}, giveup_log_level={logging.getLevelName(giveup_log_level)}'
         )
         self.on_start = on_start
         self.on_success = on_success
         self.on_backoff = on_backoff
         self.on_giveup = on_giveup
         self.jitter = jitter
-        self.giveup = giveup
         self.raise_on_giveup = raise_on_giveup
+        self.giveup = giveup
         self.wait_gen_kwargs = wait_gen_kwargs
         self.wait_gen = wait_gen
         self.exception = exception

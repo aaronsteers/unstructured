@@ -92,9 +92,6 @@ from unstructured.partition.utils.sorting import (
 )
 from unstructured.utils import requires_dependencies
 
-if TYPE_CHECKING:
-    pass
-
 RE_MULTISPACE_INCLUDING_NEWLINES = re.compile(pattern=r"\s+", flags=re.DOTALL)
 
 
@@ -165,20 +162,17 @@ def partition_pdf(
     exactly_one(filename=filename, file=file)
 
     if ocr_languages is not None:
-        # check if languages was set to anything not the default value
-        # languages and ocr_languages were therefore both provided - raise error
         if languages != ["eng"]:
             raise ValueError(
                 "Only one of languages and ocr_languages should be specified. "
                 "languages is preferred. ocr_languages is marked for deprecation.",
             )
 
-        else:
-            languages = convert_old_ocr_languages_to_languages(ocr_languages)
-            logger.warning(
-                "The ocr_languages kwarg will be deprecated in a future version of unstructured. "
-                "Please use languages instead.",
-            )
+        languages = convert_old_ocr_languages_to_languages(ocr_languages)
+        logger.warning(
+            "The ocr_languages kwarg will be deprecated in a future version of unstructured. "
+            "Please use languages instead.",
+        )
 
     return partition_pdf_or_image(
         filename=filename,
@@ -261,12 +255,11 @@ def partition_pdf_or_image(
                 "languages is preferred. ocr_languages is marked for deprecation.",
             )
 
-        else:
-            languages = convert_old_ocr_languages_to_languages(ocr_languages)
-            logger.warning(
-                "The ocr_languages kwarg will be deprecated in a future version of unstructured. "
-                "Please use languages instead.",
-            )
+        languages = convert_old_ocr_languages_to_languages(ocr_languages)
+        logger.warning(
+            "The ocr_languages kwarg will be deprecated in a future version of unstructured. "
+            "Please use languages instead.",
+        )
 
     last_modification_date = get_the_last_modification_date_pdf_or_img(
         file=file,
@@ -538,11 +531,7 @@ def _extract_text(item: LTItem) -> str:
         return item.get_text()
 
     elif isinstance(item, LTContainer):
-        text = ""
-        for child in item:
-            text += _extract_text(child) or ""
-        return text
-
+        return "".join(_extract_text(child) or "" for child in item)
     elif isinstance(item, (LTTextBox, LTImage)):
         # TODO(robinson) - Support pulling text out of images
         # https://github.com/pdfminer/pdfminer.six/blob/master/pdfminer/image.py#L90
@@ -595,9 +584,10 @@ def _process_pdfminer_pages(
                     i + 1,
                 )
                 _, words = get_word_bounding_box_from_element(obj, height)
-                for annot in annotations_within_element:
-                    urls_metadata.append(map_bbox_and_index(words, annot))
-
+                urls_metadata.extend(
+                    map_bbox_and_index(words, annot)
+                    for annot in annotations_within_element
+                )
             if hasattr(obj, "get_text"):
                 _text_snippets = [obj.get_text()]
             else:
@@ -655,7 +645,7 @@ def _process_pdfminer_pages(
                 list_item_coords,
             ):
                 text = page_element.text  # type: ignore
-                list_item_text = list_item_text + " " + text
+                list_item_text = f"{list_item_text} {text}"
                 x1 = min(
                     list_page_element.metadata.coordinates.points[0][0],
                     page_element.metadata.coordinates.points[0][0],
@@ -717,21 +707,15 @@ def convert_pdf_to_images(
     total_pages = info["Pages"]
     for start_page in range(1, total_pages + 1, chunk_size):
         end_page = min(start_page + chunk_size - 1, total_pages)
-        if f_bytes is not None:
-            chunk_images = pdf2image.convert_from_bytes(
-                f_bytes,
-                first_page=start_page,
-                last_page=end_page,
-            )
-        else:
-            chunk_images = pdf2image.convert_from_path(
-                filename,
-                first_page=start_page,
-                last_page=end_page,
-            )
-
-        for image in chunk_images:
-            yield image
+        yield from pdf2image.convert_from_bytes(
+            f_bytes,
+            first_page=start_page,
+            last_page=end_page,
+        ) if f_bytes is not None else pdf2image.convert_from_path(
+            filename,
+            first_page=start_page,
+            last_page=end_page,
+        )
 
 
 @requires_dependencies("unstructured_pytesseract", "unstructured_inference")
@@ -749,10 +733,8 @@ def _partition_pdf_or_image_with_ocr(
 
     elements = []
     if is_image:
-        images = []
         image = PILImage.open(file) if file is not None else PILImage.open(filename)
-        images.append(image)
-
+        images = [image]
         for i, image in enumerate(images):
             page_elements = _partition_pdf_or_image_with_ocr_from_image(
                 image=image,
@@ -764,9 +746,7 @@ def _partition_pdf_or_image_with_ocr(
             )
             elements.extend(page_elements)
     else:
-        page_number = 0
-        for image in convert_pdf_to_images(filename, file):
-            page_number += 1
+        for page_number, image in enumerate(convert_pdf_to_images(filename, file), start=1):
             page_elements = _partition_pdf_or_image_with_ocr_from_image(
                 image=image,
                 languages=languages,
@@ -937,14 +917,11 @@ def get_uris_from_annots(
             uri_type = str(uri_dict["S"])
 
             uri = None
-            try:
-                if uri_type == "/'URI'":
-                    uri = try_resolve(try_resolve(uri_dict["URI"])).decode("utf-8")
+            with contextlib.suppress(Exception):
                 if uri_type == "/'GoTo'":
                     uri = try_resolve(try_resolve(uri_dict["D"])).decode("utf-8")
-            except Exception:
-                pass
-
+                elif uri_type == "/'URI'":
+                    uri = try_resolve(try_resolve(uri_dict["URI"])).decode("utf-8")
             points = ((x1, y1), (x1, y2), (x2, y2), (x2, y1))
 
             coordinates_metadata = CoordinatesMetadata(
@@ -1024,10 +1001,9 @@ def calculate_intersection_area(
     y2_intersection = min(y2_1, y2_2)
 
     if x_intersection < x2_intersection and y_intersection < y2_intersection:
-        intersection_area = calculate_bbox_area(
+        return calculate_bbox_area(
             (x_intersection, y_intersection, x2_intersection, y2_intersection),
         )
-        return intersection_area
     else:
         return 0.0
 
@@ -1044,8 +1020,7 @@ def calculate_bbox_area(bbox: Tuple[float, float, float, float]) -> float:
         float: The area of the bounding box, computed as the product of its width and height.
     """
     x1, y1, x2, y2 = bbox
-    area = (x2 - x1) * (y2 - y1)
-    return area
+    return (x2 - x1) * (y2 - y1)
 
 
 def check_annotations_within_element(
@@ -1135,13 +1110,9 @@ def get_word_bounding_box_from_element(
                 if len(word) == 0:
                     start_index = text_len + index
                     x1 = character.x0
-                    y2 = height - character.y0
-                    x2 = character.x1
                     y1 = height - character.y1
-                else:
-                    x2 = character.x1
-                    y2 = height - character.y0
-
+                x2 = character.x1
+                y2 = height - character.y0
                 word += char
         text_len += len(text_line)
     return characters, words
@@ -1161,7 +1132,7 @@ def map_bbox_and_index(words: List[dict], annot: dict):
         dict: The updated annotation dictionary with "text" representing the mapped text and
             "start_index" representing the start index of the mapped text in the list of words.
     """
-    if len(words) == 0:
+    if not words:
         annot["text"] = ""
         annot["start_index"] = -1
         return annot

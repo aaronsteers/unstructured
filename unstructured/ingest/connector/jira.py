@@ -109,16 +109,15 @@ class JiraFileMeta:
 # Keys have default values in a recursive manner, allowing
 # limitless templates to parse an api response object.
 def nested_object_to_field_getter(object):
-    if isinstance(object, abc.Mapping):
-        new_object = {}
-        for k, v in object.items():
-            if isinstance(v, abc.Mapping):
-                new_object[k] = FieldGetter(nested_object_to_field_getter(v))
-            else:
-                new_object[k] = v
-        return FieldGetter(new_object)
-    else:
+    if not isinstance(object, abc.Mapping):
         return object
+    new_object = {
+        k: FieldGetter(nested_object_to_field_getter(v))
+        if isinstance(v, abc.Mapping)
+        else v
+        for k, v in object.items()
+    }
+    return FieldGetter(new_object)
 
 
 class FieldGetter(dict):
@@ -364,8 +363,7 @@ class JiraSourceConnector(SourceConnectorCleanupMixin, BaseSourceConnector):
     @requires_dependencies(["atlassian"], extras="jira")
     def _get_all_project_ids(self):
         """Fetches ids for all projects in a Jira domain."""
-        project_ids = [project["key"] for project in self.jira.projects()]
-        return project_ids
+        return [project["key"] for project in self.jira.projects()]
 
     @requires_dependencies(["atlassian"], extras="jira")
     def _get_issues_within_one_project(
@@ -390,13 +388,11 @@ class JiraSourceConnector(SourceConnectorCleanupMixin, BaseSourceConnector):
         # for when a component list is provided, including some projects
         issue_keys_all = [self._get_issues_within_one_project(project_id=id) for id in project_ids]
 
-        issue_keys_flattened = [
+        return [
             (issue_key, issue_id, None)
             for issue_keys_project in issue_keys_all
             for issue_key, issue_id, board_id in issue_keys_project
         ]
-
-        return issue_keys_flattened
 
     def _get_issues_within_one_board(self, board_id: str):
         get_issues_with_scroll = scroll_wrapper(
@@ -413,12 +409,11 @@ class JiraSourceConnector(SourceConnectorCleanupMixin, BaseSourceConnector):
 
         issue_keys_all = [self._get_issues_within_one_board(board_id=id) for id in board_ids]
 
-        issue_keys_flattened = [
+        return [
             (issue_key, issue_id, board_id)
             for issue_keys_board in issue_keys_all
             for issue_key, issue_id, board_id in issue_keys_board
         ]
-        return issue_keys_flattened
 
     def get_issues_info(self, issues):
         issues_info = [self.jira.get_issue(issue, ["key", "id"]) for issue in issues]

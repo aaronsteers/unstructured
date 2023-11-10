@@ -68,8 +68,7 @@ def sample_doc():
     footer = HTMLTitle("I'm a footer", tag="footer", ancestortags=())
     page2 = Page(1)
     page2.elements = [header, body, footer]
-    doc = HTMLDocument.from_pages([page1, page2])
-    return doc
+    return HTMLDocument.from_pages([page1, page2])
 
 
 def test_parses_tags_correctly():

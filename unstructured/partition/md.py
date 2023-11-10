@@ -16,9 +16,7 @@ from unstructured.partition.html import partition_html
 
 
 def optional_decode(contents: Union[str, bytes]) -> str:
-    if isinstance(contents, bytes):
-        return contents.decode("utf-8")
-    return contents
+    return contents.decode("utf-8") if isinstance(contents, bytes) else contents
 
 
 DETECTION_ORIGIN: str = "md"

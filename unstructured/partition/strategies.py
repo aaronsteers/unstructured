@@ -132,7 +132,4 @@ def _determine_pdf_auto_strategy(
     if infer_table_structure:
         return "hi_res"
 
-    if pdf_text_extractable:
-        return "fast"
-    else:
-        return "ocr_only"
+    return "fast" if pdf_text_extractable else "ocr_only"

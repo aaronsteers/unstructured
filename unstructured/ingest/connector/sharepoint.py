@@ -99,7 +99,7 @@ class SharepointIngestDoc(IngestDocCleanupMixin, BaseIngestDoc):
         parent = Path(self.file_path).with_suffix(self.extension)
         self.download_dir = (download_path / parent.parent).resolve()
         self.download_filepath = (download_path / parent).resolve()
-        output_filename = str(parent) + ".json"
+        output_filename = f"{str(parent)}.json"
         self.output_dir = (output_path / parent.parent).resolve()
         self.output_filepath = (output_path / output_filename).resolve()
 
@@ -128,7 +128,7 @@ class SharepointIngestDoc(IngestDocCleanupMixin, BaseIngestDoc):
 
         try:
             if self.is_page:
-                file = site_client.web.get_file_by_server_relative_path("/" + self.server_path)
+                file = site_client.web.get_file_by_server_relative_path(f"/{self.server_path}")
                 file = file.listItemAllFields.select(CONTENT_LABELS).get().execute_query()
             else:
                 file = site_client.web.get_file_by_server_relative_url(self.server_path)
@@ -163,7 +163,7 @@ class SharepointIngestDoc(IngestDocCleanupMixin, BaseIngestDoc):
             if parent_type == "sites":
                 return permissions_filename[0] == ingest_doc_filepath[1]
 
-            elif parent_type == "SitePages" or parent_type == "Shared Documents":
+            elif parent_type in ["SitePages", "Shared Documents"]:
                 return True
 
         permissions_data = None
@@ -174,7 +174,7 @@ class SharepointIngestDoc(IngestDocCleanupMixin, BaseIngestDoc):
 
             if parent_type == "sites":
                 read_dir = permissions_dir / "sites"
-            elif parent_type == "SitePages" or parent_type == "Shared Documents":
+            elif parent_type in ["SitePages", "Shared Documents"]:
                 read_dir = permissions_dir / "other"
             else:
                 read_dir = permissions_dir / "other"
@@ -323,7 +323,7 @@ class SharepointSourceConnector(SourceConnectorCleanupMixin, BaseSourceConnector
             file_path = obj.get_property("Url", "")
             server_path = file_path if file_path[0] != "/" else file_path[1:]
             if (url_path := (urlparse(base_url).path)) and (url_path != "/"):
-                file_path = url_path[1:] + "/" + file_path
+                file_path = f"{url_path[1:]}/{file_path}"
         else:
             server_path = obj.serverRelativeUrl
             file_path = obj.serverRelativeUrl[1:]
@@ -373,7 +373,7 @@ class SharepointSourceConnector(SourceConnectorCleanupMixin, BaseSourceConnector
             page_output = self._list_pages(site_client)
             if not page_output:
                 logger.info(f"Couldn't process pages for site {site_client.base_url}")
-            output = output + page_output
+            output += page_output
         return output
 
     def initialize(self):
@@ -390,10 +390,8 @@ class SharepointSourceConnector(SourceConnectorCleanupMixin, BaseSourceConnector
                 "Permissions config is not fed with 'application_id', 'client_cred' and 'tenant'."
                 "Skipping permissions ingestion.",
             )
-        else:
-            permissions_client = self.connector_config.get_permissions_client()
-            if permissions_client:
-                permissions_client.write_all_permissions(self.processor_config.output_dir)
+        elif permissions_client := self.connector_config.get_permissions_client():
+            permissions_client.write_all_permissions(self.processor_config.output_dir)
 
         if not base_site_client.is_tenant:
             return self._ingest_site_docs(base_site_client)
@@ -437,9 +435,8 @@ class SharepointPermissionsConnector:
     def validated_response(self, response):
         if response.status_code == 200:
             return response.json()
-        else:
-            print(f"Request failed with status code {response.status_code}:")
-            print(response.text)
+        print(f"Request failed with status code {response.status_code}:")
+        print(response.text)
 
     @requires_dependencies(["requests"], extras="sharepoint")
     def get_sites(self):
@@ -531,16 +528,14 @@ class SharepointPermissionsConnector:
 
         print("Obtaining drive data for sites for permissions (rbac)")
         for site_id, site_url in sites:
-            drives = self.get_drives(site_id)
-            if drives:
+            if drives := self.get_drives(site_id):
                 drives_for_site = drives["value"]
                 drive_ids.extend([(site_id, drive["id"]) for drive in drives_for_site])
 
         print("Obtaining item data from drives for permissions (rbac)")
         item_ids = []
         for site, drive_id in drive_ids:
-            drive_items = self.get_drive_items(site, drive_id)
-            if drive_items:
+            if drive_items := self.get_drive_items(site, drive_id):
                 item_ids.extend(
                     [
                         (site, drive_id, item["id"], item["name"], item["webUrl"])
@@ -552,18 +547,14 @@ class SharepointPermissionsConnector:
 
         print("Writing permissions data to disk")
         for site, drive_id, item_id, item_name, item_web_url in item_ids:
-            res = self.get_permissions_for_drive_item(site, drive_id, item_id)
-            if res:
+            if res := self.get_permissions_for_drive_item(site, drive_id, item_id):
                 parent_type, parent_name = self.extract_site_name_from_weburl(item_web_url)
 
                 if parent_type == "sites":
                     write_path = permissions_dir / "sites" / f"{parent_name}_SEP_{item_name}.json"
 
-                elif parent_type == "Personal" or parent_type == "Shared Documents":
-                    write_path = permissions_dir / "other" / f"{parent_name}_SEP_{item_name}.json"
                 else:
                     write_path = permissions_dir / "other" / f"{parent_name}_SEP_{item_name}.json"
-
                 if not Path(os.path.dirname(write_path)).is_dir():
                     os.makedirs(os.path.dirname(write_path))
 

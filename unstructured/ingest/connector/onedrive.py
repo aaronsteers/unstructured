@@ -77,7 +77,7 @@ class OneDriveIngestDoc(IngestDocCleanupMixin, BaseIngestDoc):
                 f"Value MUST be one of {', '.join([k for k in EXT_TO_FILETYPE if k is not None])}.",
             )
 
-        self.server_relative_path = self.file_path + "/" + self.file_name
+        self.server_relative_path = f"{self.file_path}/{self.file_name}"
         self._set_download_paths()
 
     def _set_download_paths(self) -> None:
@@ -95,7 +95,7 @@ class OneDriveIngestDoc(IngestDocCleanupMixin, BaseIngestDoc):
 
         self.download_dir = download_path
         self.download_filepath = (download_path / self.file_name).resolve()
-        output_filename = output_filename = self.file_name + ".json"
+        output_filename = output_filename = f"{self.file_name}.json"
         self.output_dir = output_path
         self.output_filepath = (output_path / output_filename).resolve()
 
@@ -121,8 +121,7 @@ class OneDriveIngestDoc(IngestDocCleanupMixin, BaseIngestDoc):
 
         client = GraphClient(self.connector_config.token_factory)
         root = client.users[self.connector_config.user_pname].drive.get().execute_query().root
-        file = root.get_by_path(self.server_relative_path).get().execute_query()
-        return file
+        return root.get_by_path(self.server_relative_path).get().execute_query()
 
     def update_source_metadata(self, **kwargs):
         file = kwargs.get("file", self._fetch_file())
@@ -137,13 +136,15 @@ class OneDriveIngestDoc(IngestDocCleanupMixin, BaseIngestDoc):
             version = file.versions[n_versions - 1].properties.get("id", None)
 
         self.source_metadata = SourceMetadata(
-            date_created=datetime.strptime(file.created_datetime, "%Y-%m-%dT%H:%M:%SZ").isoformat(),
+            date_created=datetime.strptime(
+                file.created_datetime, "%Y-%m-%dT%H:%M:%SZ"
+            ).isoformat(),
             date_modified=datetime.strptime(
                 file.last_modified_datetime,
                 "%Y-%m-%dT%H:%M:%SZ",
             ).isoformat(),
             version=version,
-            source_url=file.parent_reference.path + "/" + self.file_name,
+            source_url=f"{file.parent_reference.path}/{self.file_name}",
             exists=True,
         )
 
@@ -197,9 +198,7 @@ class OneDriveSourceConnector(SourceConnectorCleanupMixin, BaseSourceConnector):
         try:
             token_resp: dict = self.connector_config.token_factory()
             if error := token_resp.get("error"):
-                raise SourceConnectionError(
-                    "{} ({})".format(error, token_resp.get("error_description"))
-                )
+                raise SourceConnectionError(f'{error} ({token_resp.get("error_description")})')
             _ = self.client
         except Exception as e:
             logger.error(f"failed to validate connection: {e}", exc_info=True)

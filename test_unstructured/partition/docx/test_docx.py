@@ -374,12 +374,12 @@ def test_get_emphasized_texts_from_paragraph(expected_emphasized_texts: List[Dic
     paragraph = partitioner._document.paragraphs[2]
     emphasized_texts = list(partitioner._iter_paragraph_emphasis(paragraph))
     assert paragraph.text == ""
-    assert emphasized_texts == []
+    assert not emphasized_texts
 
     paragraph = partitioner._document.paragraphs[3]
     emphasized_texts = list(partitioner._iter_paragraph_emphasis(paragraph))
     assert paragraph.text == "I am a normal text."
-    assert emphasized_texts == []
+    assert not emphasized_texts
 
 
 def test_iter_table_emphasis(expected_emphasized_texts: List[Dict[str, str]]):

@@ -16,7 +16,7 @@ class AzureCognitiveSearchCliWriteConfig(CliConfig):
 
     @staticmethod
     def get_cli_options() -> t.List[click.Option]:
-        options = [
+        return [
             click.Option(
                 ["--key"],
                 required=True,
@@ -41,14 +41,12 @@ class AzureCognitiveSearchCliWriteConfig(CliConfig):
                 help="The name of the index to connect to",
             ),
         ]
-        return options
 
 
 def get_base_dest_cmd():
     from unstructured.ingest.cli.base.dest import BaseDestCmd
 
-    cmd_cls = BaseDestCmd(
+    return BaseDestCmd(
         cmd_name="azure-cognitive-search",
         cli_config=AzureCognitiveSearchCliWriteConfig,
     )
-    return cmd_cls

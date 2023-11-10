@@ -42,12 +42,12 @@ def test_partition_json_from_filename(filename: str):
 
     with tempfile.TemporaryDirectory() as tmpdir:
         _filename = os.path.basename(filename)
-        test_path = os.path.join(tmpdir, _filename + ".json")
+        test_path = os.path.join(tmpdir, f"{_filename}.json")
         elements_to_json(elements, filename=test_path, indent=2)
         test_elements = partition_json(filename=test_path)
 
     assert len(elements) > 0
-    assert len(str(elements[0])) > 0
+    assert str(elements[0]) != ""
 
     assert len(elements) == len(test_elements)
     for i in range(len(elements)):
@@ -72,12 +72,12 @@ def test_partition_json_from_filename_with_metadata_filename(filename: str):
 
     with tempfile.TemporaryDirectory() as tmpdir:
         _filename = os.path.basename(filename)
-        test_path = os.path.join(tmpdir, _filename + ".json")
+        test_path = os.path.join(tmpdir, f"{_filename}.json")
         elements_to_json(elements, filename=test_path, indent=2)
         test_elements = partition_json(filename=test_path, metadata_filename="test")
 
     assert len(test_elements) > 0
-    assert len(str(test_elements[0])) > 0
+    assert str(test_elements[0]) != ""
     assert all(element.metadata.filename == "test" for element in test_elements)
 
 
@@ -98,13 +98,13 @@ def test_partition_json_from_file(filename: str):
 
     with tempfile.TemporaryDirectory() as tmpdir:
         _filename = os.path.basename(filename)
-        test_path = os.path.join(tmpdir, _filename + ".json")
+        test_path = os.path.join(tmpdir, f"{_filename}.json")
         elements_to_json(elements, filename=test_path, indent=2)
         with open(test_path) as f:
             test_elements = partition_json(file=f)
 
     assert len(elements) > 0
-    assert len(str(elements[0])) > 0
+    assert str(elements[0]) != ""
     assert len(elements) == len(test_elements)
     for i in range(len(elements)):
         assert elements[i] == test_elements[i]
@@ -127,7 +127,7 @@ def test_partition_json_from_file_with_metadata_filename(filename: str):
         elements = partition_email(filename=path)
     with tempfile.TemporaryDirectory() as tmpdir:
         _filename = os.path.basename(filename)
-        test_path = os.path.join(tmpdir, _filename + ".json")
+        test_path = os.path.join(tmpdir, f"{_filename}.json")
         elements_to_json(elements, filename=test_path, indent=2)
         with open(test_path) as f:
             test_elements = partition_json(file=f, metadata_filename="test")
@@ -153,14 +153,13 @@ def test_partition_json_from_text(filename: str):
 
     with tempfile.TemporaryDirectory() as tmpdir:
         _filename = os.path.basename(filename)
-        test_path = os.path.join(tmpdir, _filename + ".json")
+        test_path = os.path.join(tmpdir, f"{_filename}.json")
         elements_to_json(elements, filename=test_path, indent=2)
-        with open(test_path) as f:
-            text = f.read()
+        text = pathlib.Path(test_path).read_text()
         test_elements = partition_json(text=text)
 
     assert len(elements) > 0
-    assert len(str(elements[0])) > 0
+    assert str(elements[0]) != ""
     assert len(elements) == len(test_elements)
     for i in range(len(elements)):
         assert elements[i] == test_elements[i]
@@ -197,9 +196,7 @@ def test_partition_json_raises_with_too_many_specified():
     with tempfile.TemporaryDirectory() as tmpdir:
         test_path = os.path.join(tmpdir, "fake-text.txt.json")
         elements_to_json(elements, filename=test_path, indent=2)
-        with open(test_path) as f:
-            text = f.read()
-
+        text = pathlib.Path(test_path).read_text()
     with pytest.raises(ValueError):
         partition_json(filename=test_path, file=f)
 
@@ -230,12 +227,12 @@ def test_partition_json_from_filename_exclude_metadata(filename: str):
 
     with tempfile.TemporaryDirectory() as tmpdir:
         _filename = os.path.basename(filename)
-        test_path = os.path.join(tmpdir, _filename + ".json")
+        test_path = os.path.join(tmpdir, f"{_filename}.json")
         elements_to_json(elements, filename=test_path, indent=2)
         test_elements = partition_json(filename=test_path, include_metadata=False)
 
     for i in range(len(test_elements)):
-        assert any(test_elements[i].metadata.to_dict()) is False
+        assert not any(test_elements[i].metadata.to_dict())
 
 
 @pytest.mark.parametrize("filename", test_files)
@@ -255,13 +252,13 @@ def test_partition_json_from_file_exclude_metadata(filename: str):
 
     with tempfile.TemporaryDirectory() as tmpdir:
         _filename = os.path.basename(filename)
-        test_path = os.path.join(tmpdir, _filename + ".json")
+        test_path = os.path.join(tmpdir, f"{_filename}.json")
         elements_to_json(elements, filename=test_path, indent=2)
         with open(test_path) as f:
             test_elements = partition_json(file=f, include_metadata=False)
 
     for i in range(len(test_elements)):
-        assert any(test_elements[i].metadata.to_dict()) is False
+        assert not any(test_elements[i].metadata.to_dict())
 
 
 @pytest.mark.parametrize("filename", test_files)
@@ -280,14 +277,13 @@ def test_partition_json_from_text_exclude_metadata(filename: str):
         elements = partition_email(filename=path)
     with tempfile.TemporaryDirectory() as tmpdir:
         _filename = os.path.basename(filename)
-        test_path = os.path.join(tmpdir, _filename + ".json")
+        test_path = os.path.join(tmpdir, f"{_filename}.json")
         elements_to_json(elements, filename=test_path, indent=2)
-        with open(test_path) as f:
-            text = f.read()
+        text = pathlib.Path(test_path).read_text()
         test_elements = partition_json(text=text, include_metadata=False)
 
     for i in range(len(test_elements)):
-        assert any(test_elements[i].metadata.to_dict()) is False
+        assert not any(test_elements[i].metadata.to_dict())
 
 
 def test_partition_json_metadata_date(
@@ -368,9 +364,7 @@ def test_partition_json_from_file_with_custom_metadata_date(
 def test_partition_json_from_text_metadata_date(
     filename="example-docs/spring-weather.html.json",
 ):
-    with open(filename) as f:
-        text = f.read()
-
+    text = pathlib.Path(filename).read_text()
     elements = partition_json(
         text=text,
     )
@@ -383,9 +377,7 @@ def test_partition_json_from_text_with_custom_metadata_date(
 ):
     expected_last_modification_date = "2020-07-05T09:24:28"
 
-    with open(filename) as f:
-        text = f.read()
-
+    text = pathlib.Path(filename).read_text()
     elements = partition_json(text=text, metadata_last_modified=expected_last_modification_date)
 
     assert elements[0].metadata.last_modified == expected_last_modification_date

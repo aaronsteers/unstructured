@@ -21,7 +21,7 @@ class OnedriveCliConfig(CliConfig):
 
     @staticmethod
     def get_cli_options() -> t.List[click.Option]:
-        options = [
+        return [
             click.Option(
                 ["--client-id"],
                 required=True,
@@ -60,13 +60,11 @@ class OnedriveCliConfig(CliConfig):
                 "https://login.microsoftonline.com",
             ),
         ]
-        return options
 
 
 def get_base_src_cmd() -> BaseSrcCmd:
-    cmd_cls = BaseSrcCmd(
+    return BaseSrcCmd(
         cmd_name="onedrive",
         cli_config=OnedriveCliConfig,
         additional_cli_options=[CliRecursiveConfig],
     )
-    return cmd_cls

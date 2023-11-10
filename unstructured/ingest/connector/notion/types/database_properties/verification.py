@@ -50,9 +50,7 @@ class VerificationData(FromJSONMixin, GetHTMLMixin):
             elements.append(verified_by_html)
         if (date := self.date) and (date_html := date.get_html()):
             elements.append(date_html)
-        if elements:
-            return Div([], elements)
-        return None
+        return Div([], elements) if elements else None
 
 
 @dataclass
@@ -73,6 +71,4 @@ class VerificationCell(DBCellBase):
         if (verification := self.verification) and (verification_html := verification.get_html()):
             elements.append(verification_html)
 
-        if elements:
-            return Div([], elements)
-        return None
+        return Div([], elements) if elements else None

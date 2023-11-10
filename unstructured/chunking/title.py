@@ -124,9 +124,7 @@ def chunk_by_title(
         raise ValueError(f"'new_after_n_chars' argument must be >= 0, got {new_after_n_chars}")
 
     # -- `new_after_n_chars` takes precendence on conflict with `combine_text_under_n_chars` --
-    if combine_text_under_n_chars > new_after_n_chars:
-        combine_text_under_n_chars = new_after_n_chars
-
+    combine_text_under_n_chars = min(combine_text_under_n_chars, new_after_n_chars)
     # ----------------------------------------------------------------
 
     chunked_elements: List[Element] = []

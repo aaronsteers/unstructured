@@ -57,12 +57,11 @@ def elements_to_text(
     Otherwise, return the text of the elements as a string.
     """
     element_cct = convert_to_text(elements)
-    if filename is not None:
-        with open(filename, "w", encoding=encoding) as f:
-            f.write(element_cct)
-            return None
-    else:
+    if filename is None:
         return element_cct
+    with open(filename, "w", encoding=encoding) as f:
+        f.write(element_cct)
+        return None
 
 
 def convert_to_isd(elements: List[Element]) -> List[Dict[str, Any]]:
@@ -113,12 +112,11 @@ def elements_to_json(
 
     pre_processed_elements = _fix_metadata_field_precision(elements)
     element_dict = convert_to_dict(pre_processed_elements)
-    if filename is not None:
-        with open(filename, "w", encoding=encoding) as f:
-            json.dump(element_dict, f, indent=indent)
-            return None
-    else:
+    if filename is None:
         return json.dumps(element_dict, indent=indent)
+    with open(filename, "w", encoding=encoding) as f:
+        json.dump(element_dict, f, indent=indent)
+        return None
 
 
 def isd_to_elements(isd: List[Dict[str, Any]]) -> List[Element]:
@@ -169,10 +167,10 @@ def elements_from_json(
     if filename:
         with open(filename, encoding=encoding) as f:
             element_dict = json.load(f)
-        return dict_to_elements(element_dict)
     else:
         element_dict = json.loads(text)
-        return dict_to_elements(element_dict)
+
+    return dict_to_elements(element_dict)
 
 
 def flatten_dict(dictionary, parent_key="", separator="_", keys_to_omit: List[str] = None):
@@ -180,14 +178,12 @@ def flatten_dict(dictionary, parent_key="", separator="_", keys_to_omit: List[st
     flattened_dict = {}
     for key, value in dictionary.items():
         new_key = f"{parent_key}{separator}{key}" if parent_key else key
-        if new_key in keys_to_omit:
+        if new_key in keys_to_omit or not isinstance(value, dict):
             flattened_dict[new_key] = value
-        elif isinstance(value, dict):
+        else:
             flattened_dict.update(
                 flatten_dict(value, new_key, separator, keys_to_omit=keys_to_omit),
             )
-        else:
-            flattened_dict[new_key] = value
     return flattened_dict
 
 
@@ -323,17 +319,19 @@ def filter_element_types(
 
     filtered_elements: List[Element] = []
     if include_element_types:
-        for element in elements:
-            if type(element) in include_element_types:
-                filtered_elements.append(element)
-
+        filtered_elements.extend(
+            element
+            for element in elements
+            if type(element) in include_element_types
+        )
         return filtered_elements
 
     elif exclude_element_types:
-        for element in elements:
-            if type(element) not in exclude_element_types:
-                filtered_elements.append(element)
-
+        filtered_elements.extend(
+            element
+            for element in elements
+            if type(element) not in exclude_element_types
+        )
         return filtered_elements
 
     return elements

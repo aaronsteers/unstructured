@@ -31,11 +31,10 @@ class Reader(SourceNode):
                 logger.info(f"File exists: {doc.filename}, skipping download")
                 # Still need to fetch metadata if file exists locally
                 doc.update_source_metadata()
+            elif self.retry_strategy:
+                self.retry_strategy(doc.get_file)
             else:
-                if self.retry_strategy:
-                    self.retry_strategy(doc.get_file)
-                else:
-                    doc.get_file()
+                doc.get_file()
             for k, v in doc.to_dict().items():
                 ingest_doc_dict[k] = v
             return doc.filename

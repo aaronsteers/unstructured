@@ -54,8 +54,7 @@ class RedditIngestDoc(IngestDocCleanupMixin, BaseIngestDoc):
             client_secret=self.connector_config.client_secret,
             user_agent=self.connector_config.user_agent,
         )
-        post = Submission(reddit, self.post_id)
-        return post
+        return Submission(reddit, self.post_id)
 
     def update_source_metadata(self, **kwargs):
         post = kwargs.get("post", self.get_post())

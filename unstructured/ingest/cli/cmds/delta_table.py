@@ -21,7 +21,7 @@ class DeltaTableCliConfig(CliConfig):
 
     @staticmethod
     def get_cli_options() -> t.List[click.Option]:
-        options = [
+        return [
             click.Option(
                 ["--table-uri"],
                 required=True,
@@ -47,14 +47,13 @@ class DeltaTableCliConfig(CliConfig):
                 help="If set, will load table without tracking files.",
             ),
         ]
-        return options
 
 
 @dataclass
 class DeltaTableCliWriteConfig(DeltaTableWriteConfig, CliConfig):
     @staticmethod
     def get_cli_options() -> t.List[click.Option]:
-        options = [
+        return [
             click.Option(
                 ["--overwrite-schema"],
                 is_flag=True,
@@ -77,20 +76,17 @@ class DeltaTableCliWriteConfig(DeltaTableWriteConfig, CliConfig):
                 "If 'ignore', will not write anything if table already exists.",
             ),
         ]
-        return options
 
 
 def get_base_src_cmd() -> BaseSrcCmd:
-    cmd_cls = BaseSrcCmd(cmd_name=CMD_NAME, cli_config=DeltaTableCliConfig)
-    return cmd_cls
+    return BaseSrcCmd(cmd_name=CMD_NAME, cli_config=DeltaTableCliConfig)
 
 
 def get_base_dest_cmd():
     from unstructured.ingest.cli.base.dest import BaseDestCmd
 
-    cmd_cls = BaseDestCmd(
+    return BaseDestCmd(
         cmd_name=CMD_NAME,
         cli_config=DeltaTableCliConfig,
         additional_cli_options=[DeltaTableCliWriteConfig],
     )
-    return cmd_cls

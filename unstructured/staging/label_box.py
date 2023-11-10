@@ -74,9 +74,8 @@ def stage_for_label_box(
 
     if create_directory:
         os.makedirs(output_directory, exist_ok=True)
-    else:
-        if not os.path.isdir(output_directory):
-            raise FileNotFoundError(output_directory)
+    elif not os.path.isdir(output_directory):
+        raise FileNotFoundError(output_directory)
 
     config_data: List[Dict[str, str]] = []
     for element, element_id, attachment_list in zip(elements, ids, attachments):

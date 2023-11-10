@@ -17,23 +17,24 @@ class DropboxCliConfig(CliConfig):
 
     @staticmethod
     def get_cli_options() -> t.List[click.Option]:
-        options = [
+        return [
             click.Option(
                 ["--token"],
                 required=True,
                 help="Dropbox access token.",
             ),
         ]
-        return options
 
 
 def get_base_src_cmd() -> BaseSrcCmd:
-    cmd_cls = BaseSrcCmd(cmd_name=CMD_NAME, cli_config=DropboxCliConfig, is_fsspec=True)
-    return cmd_cls
+    return BaseSrcCmd(
+        cmd_name=CMD_NAME, cli_config=DropboxCliConfig, is_fsspec=True
+    )
 
 
 def get_base_dest_cmd():
     from unstructured.ingest.cli.base.dest import BaseDestCmd
 
-    cmd_cls = BaseDestCmd(cmd_name=CMD_NAME, cli_config=DropboxCliConfig, is_fsspec=True)
-    return cmd_cls
+    return BaseDestCmd(
+        cmd_name=CMD_NAME, cli_config=DropboxCliConfig, is_fsspec=True
+    )

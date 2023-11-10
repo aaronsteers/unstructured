@@ -561,8 +561,7 @@ def inference_results():
         layout=layout.TextRegion.from_coords(0, 0, 600, 800, text="hello"),
     )
     page.elements = [layout.LayoutElement.from_coords(0, 0, 600, 800, text="hello")]
-    doc = layout.DocumentLayout(pages=[page])
-    return doc
+    return layout.DocumentLayout(pages=[page])
 
 
 def test_partition_image_has_filename(inference_results):

@@ -17,7 +17,7 @@ class ElasticsearchCliConfig(CliConfig):
 
     @staticmethod
     def get_cli_options() -> t.List[click.Option]:
-        options = [
+        return [
             click.Option(
                 ["--index-name"],
                 required=True,
@@ -40,9 +40,7 @@ class ElasticsearchCliConfig(CliConfig):
                 "Example: --jq-query '{meta, body}'",
             ),
         ]
-        return options
 
 
 def get_base_src_cmd() -> BaseSrcCmd:
-    cmd_cls = BaseSrcCmd(cmd_name="elasticsearch", cli_config=ElasticsearchCliConfig)
-    return cmd_cls
+    return BaseSrcCmd(cmd_name="elasticsearch", cli_config=ElasticsearchCliConfig)

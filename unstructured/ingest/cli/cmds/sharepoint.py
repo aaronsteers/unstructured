@@ -20,7 +20,7 @@ class SharepointCliConfig(CliConfig):
 
     @staticmethod
     def get_cli_options() -> t.List[click.Option]:
-        options = [
+        return [
             click.Option(
                 ["--client-id"],
                 default=None,
@@ -59,13 +59,11 @@ class SharepointCliConfig(CliConfig):
                 help="Process only files.",
             ),
         ]
-        return options
 
 
 def get_base_src_cmd() -> BaseSrcCmd:
-    cmd_cls = BaseSrcCmd(
+    return BaseSrcCmd(
         cmd_name="sharepoint",
         cli_config=SharepointCliConfig,
         additional_cli_options=[CliRecursiveConfig],
     )
-    return cmd_cls

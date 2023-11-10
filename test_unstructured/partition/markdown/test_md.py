@@ -60,8 +60,7 @@ def test_partition_md_from_file_with_metadata_filename():
 
 def test_partition_md_from_text():
     filename = os.path.join(DIRECTORY, "..", "..", "..", "example-docs", "README.md")
-    with open(filename) as f:
-        text = f.read()
+    text = pathlib.Path(filename).read_text()
     elements = partition_md(text=text)
     assert len(elements) > 0
     for element in elements:
@@ -78,9 +77,7 @@ class MockResponse:
 
 def test_partition_md_from_url():
     filename = os.path.join(DIRECTORY, "..", "..", "..", "example-docs", "README.md")
-    with open(filename) as f:
-        text = f.read()
-
+    text = pathlib.Path(filename).read_text()
     response = MockResponse(
         text=text,
         status_code=200,
@@ -96,9 +93,7 @@ def test_partition_md_from_url():
 
 def test_partition_md_from_url_raises_with_bad_status_code():
     filename = os.path.join(DIRECTORY, "..", "..", "..", "example-docs", "README.md")
-    with open(filename) as f:
-        text = f.read()
-
+    text = pathlib.Path(filename).read_text()
     response = MockResponse(
         text=text,
         status_code=500,
@@ -110,9 +105,7 @@ def test_partition_md_from_url_raises_with_bad_status_code():
 
 def test_partition_md_from_url_raises_with_bad_content_type():
     filename = os.path.join(DIRECTORY, "..", "..", "..", "example-docs", "README.md")
-    with open(filename) as f:
-        text = f.read()
-
+    text = pathlib.Path(filename).read_text()
     response = MockResponse(
         text=text,
         status_code=200,
@@ -129,9 +122,7 @@ def test_partition_md_raises_with_none_specified():
 
 def test_partition_md_raises_with_too_many_specified():
     filename = os.path.join(DIRECTORY, "..", "..", "..", "example-docs", "README.md")
-    with open(filename) as f:
-        text = f.read()
-
+    text = pathlib.Path(filename).read_text()
     with pytest.raises(ValueError):
         partition_md(filename=filename, text=text)
 
@@ -153,8 +144,7 @@ def test_partition_md_from_file_exclude_metadata():
 
 def test_partition_md_from_text_exclude_metadata():
     filename = os.path.join(DIRECTORY, "..", "..", "..", "example-docs", "README.md")
-    with open(filename) as f:
-        text = f.read()
+    text = pathlib.Path(filename).read_text()
     elements = partition_md(text=text, include_metadata=False)
     for i in range(len(elements)):
         assert elements[i].metadata.to_dict() == {}
@@ -238,9 +228,7 @@ def test_partition_md_from_file_with_custom_metadata_date(
 def test_partition_md_from_text_metadata_date(
     filename="example-docs/README.md",
 ):
-    with open(filename) as f:
-        text = f.read()
-
+    text = pathlib.Path(filename).read_text()
     elements = partition_md(
         text=text,
     )
@@ -253,17 +241,14 @@ def test_partition_md_from_text_with_custom_metadata_date(
 ):
     expected_last_modification_date = "2020-07-05T09:24:28"
 
-    with open(filename) as f:
-        text = f.read()
-
+    text = pathlib.Path(filename).read_text()
     elements = partition_md(text=text, metadata_last_modified=expected_last_modification_date)
 
     assert elements[0].metadata.last_modified == expected_last_modification_date
 
 
 def test_partition_md_with_json():
-    with open(example_doc_path("README.md")) as f:
-        text = f.read()
+    text = pathlib.Path(example_doc_path("README.md")).read_text()
     elements = partition_md(text=text)
     assert_round_trips_through_JSON(elements)
 

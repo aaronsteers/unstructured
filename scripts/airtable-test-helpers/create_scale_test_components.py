@@ -39,12 +39,6 @@ def create_n_bases(api, number_of_bases):
                               Try Airtable Web API instead: \
                               https://airtable.com/developers/web/api/create-base",
     )
-    # if len(pyair.metadata.get_api_bases(api)["bases"])>99:
-    #     logger.warning("Airtable Org already has a high number of bases. \
-    #                Aborting creation of new bases to avoid duplication and bloating.")
-    #     return
-
-    number_of_bases
 
 
 def create_n_tables(base, number_of_tables):

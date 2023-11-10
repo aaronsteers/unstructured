@@ -83,8 +83,7 @@ def test_partition_xml_from_filename_with_tags_default_encoding(filename):
 
 
 def test_partition_xml_from_text_with_tags(filename="example-docs/factbook.xml"):
-    with open(filename) as f:
-        text = f.read()
+    text = pathlib.Path(filename).read_text()
     elements = partition_xml(text=text, xml_keep_tags=True, metadata_filename=filename)
 
     assert "<leader>Joe Biden</leader>" in elements[0].text

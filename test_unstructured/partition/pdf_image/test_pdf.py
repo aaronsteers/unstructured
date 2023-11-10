@@ -245,11 +245,14 @@ def test_partition_pdf_with_fast_groups_text(
 ):
     elements = pdf.partition_pdf(filename=filename, url=None, strategy="fast")
 
-    first_narrative_element = None
-    for element in elements:
-        if isinstance(element, NarrativeText):
-            first_narrative_element = element
-            break
+    first_narrative_element = next(
+        (
+            element
+            for element in elements
+            if isinstance(element, NarrativeText)
+        ),
+        None,
+    )
     assert len(first_narrative_element.text) > 1000
     assert first_narrative_element.text.startswith("Abstract. Recent advances")
     assert first_narrative_element.text.endswith("https://layout-parser.github.io.")
@@ -682,11 +685,10 @@ def test_partition_categorization_backup():
 )
 def test_combine_numbered_list(filename):
     elements = pdf.partition_pdf(filename=filename, strategy="auto")
-    first_list_element = None
-    for element in elements:
-        if isinstance(element, ListItem):
-            first_list_element = element
-            break
+    first_list_element = next(
+        (element for element in elements if isinstance(element, ListItem)),
+        None,
+    )
     assert len(elements) < 28
     assert len([element for element in elements if isinstance(element, ListItem)]) == 4
     assert first_list_element.text.endswith(
@@ -752,7 +754,7 @@ def test_partition_pdf_word_bbox_not_char(
     try:
         elements = pdf.partition_pdf(filename=filename)
     except Exception as e:
-        raise ("Partitioning fail: %s" % e)
+        raise f"Partitioning fail: {e}"
     assert len(elements) == 17
 
 

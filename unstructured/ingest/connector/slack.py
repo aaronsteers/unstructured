@@ -33,15 +33,8 @@ class SimpleSlackConfig(BaseConnectorConfig):
     latest: t.Optional[str]
 
     def validate_inputs(self):
-        oldest_valid = True
-        latest_valid = True
-
-        if self.oldest:
-            oldest_valid = validate_date_args(self.oldest)
-
-        if self.latest:
-            latest_valid = validate_date_args(self.latest)
-
+        oldest_valid = validate_date_args(self.oldest) if self.oldest else True
+        latest_valid = validate_date_args(self.latest) if self.latest else True
         return oldest_valid, latest_valid
 
     def __post_init__(self):
@@ -72,12 +65,12 @@ class SlackIngestDoc(IngestDocCleanupMixin, BaseIngestDoc):
     # __post_init__ for multiprocessing simplicity (no Path objects in initially
     # instantiated object)
     def _tmp_download_file(self):
-        channel_file = self.channel + ".xml"
+        channel_file = f"{self.channel}.xml"
         return Path(self.read_config.download_dir) / channel_file
 
     @property
     def _output_filename(self):
-        output_file = self.channel + ".json"
+        output_file = f"{self.channel}.json"
         return Path(self.processor_config.output_dir) / output_file
 
     @property
@@ -97,20 +90,13 @@ class SlackIngestDoc(IngestDocCleanupMixin, BaseIngestDoc):
         from slack_sdk import WebClient
 
         self.client = WebClient(token=self.token)
-        oldest = "0"
-        latest = "0"
-        if self.oldest:
-            oldest = self.convert_datetime(self.oldest)
-
-        if self.latest:
-            latest = self.convert_datetime(self.latest)
-
-        result = self.client.conversations_history(
+        oldest = self.convert_datetime(self.oldest) if self.oldest else "0"
+        latest = self.convert_datetime(self.latest) if self.latest else "0"
+        return self.client.conversations_history(
             channel=self.channel,
             oldest=oldest,
             latest=latest,
         )
-        return result
 
     def update_source_metadata(self, **kwargs):
         result = kwargs.get("result", self._fetch_messages())
@@ -123,11 +109,9 @@ class SlackIngestDoc(IngestDocCleanupMixin, BaseIngestDoc):
         timestamps.sort()
         date_created = None
         date_modified = None
-        if len(timestamps) > 0:
+        if timestamps:
             date_created = datetime.fromtimestamp(float(timestamps[0])).isoformat()
-            date_modified = datetime.fromtimestamp(
-                float(timestamps[len(timestamps) - 1]),
-            ).isoformat()
+            date_modified = datetime.fromtimestamp(float(timestamps[-1])).isoformat()
 
         self.source_metadata = SourceMetadata(
             date_created=date_created,

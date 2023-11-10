@@ -47,7 +47,7 @@ class Database(FromJSONMixin, GetHTMLMixin):
         parent = data.pop("parent")
         title = data.pop("title")
         description = data.pop("description")
-        page = cls(
+        return cls(
             properties=map_properties(data.pop("properties", {})),
             created_by=PartialUser.from_dict(created_by),
             last_edited_by=PartialUser.from_dict(last_edited_by),
@@ -59,14 +59,10 @@ class Database(FromJSONMixin, GetHTMLMixin):
             **data,
         )
 
-        return page
-
     def get_html(self) -> Optional[HtmlTag]:
         spans = []
         if title := self.title:
             spans.append(Span([], [rt.get_html() for rt in title]))
         if description := self.description:
             spans.append(Span([], [rt.get_html() for rt in description]))
-        if spans:
-            return Div([], spans)
-        return None
+        return Div([], spans) if spans else None

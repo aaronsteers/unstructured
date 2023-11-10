@@ -90,7 +90,7 @@ def test_detect_filetype_from_filename_with_extension(monkeypatch, file, expecte
     # Test when the file does not exist
     monkeypatch.setattr(filetype, "LIBMAGIC_AVAILABLE", True)
     extension = pathlib.Path(file).suffix
-    filename = os.path.join(EXAMPLE_DOCS_DIRECTORY, "not-on-disk" + extension)
+    filename = os.path.join(EXAMPLE_DOCS_DIRECTORY, f"not-on-disk{extension}")
     assert detect_filetype(filename) == expected
 
 

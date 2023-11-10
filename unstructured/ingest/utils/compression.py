@@ -33,10 +33,7 @@ def uncompress_file(filename: str, path: Optional[str] = None) -> str:
         return uncompress_tar_file(tar_filename=filename, path=path)
     else:
         raise ValueError(
-            "filename {} not a recognized compressed extension: {}".format(
-                filename,
-                ", ".join(ZIP_FILE_EXT + TAR_FILE_EXT),
-            ),
+            f'filename {filename} not a recognized compressed extension: {", ".join(ZIP_FILE_EXT + TAR_FILE_EXT)}'
         )
 
 

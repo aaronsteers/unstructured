@@ -52,10 +52,10 @@ def format_encoding_str(encoding: str) -> str:
 def validate_encoding(encoding: str) -> bool:
     """Checks if an encoding string is valid. Helps to avoid errors in cases where
     invalid encodings are extracted from malformed documents."""
-    for common_encoding in COMMON_ENCODINGS:
-        if format_encoding_str(common_encoding) == format_encoding_str(encoding):
-            return True
-    return False
+    return any(
+        format_encoding_str(common_encoding) == format_encoding_str(encoding)
+        for common_encoding in COMMON_ENCODINGS
+    )
 
 
 def detect_file_encoding(
@@ -85,7 +85,7 @@ def detect_file_encoding(
                     file_text = byte_data.decode(enc)
                 encoding = enc
                 break
-            except (UnicodeDecodeError, UnicodeError):
+            except UnicodeError:
                 continue
         else:
             raise UnicodeDecodeError(
@@ -117,7 +117,7 @@ def read_txt_file(
             with open(filename, encoding=formatted_encoding) as f:
                 try:
                     file_text = f.read()
-                except (UnicodeDecodeError, UnicodeError) as error:
+                except UnicodeError as error:
                     raise error
         else:
             formatted_encoding, file_text = detect_file_encoding(filename)
@@ -130,7 +130,7 @@ def read_txt_file(
                     file_text = file_content.decode(formatted_encoding)
                 else:
                     file_text = file_content
-            except (UnicodeDecodeError, UnicodeError) as error:
+            except UnicodeError as error:
                 raise error
         else:
             formatted_encoding, file_text = detect_file_encoding(file=file)

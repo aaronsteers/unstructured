@@ -30,11 +30,10 @@ class ToDo(BlockBase):
         if not self.rich_text:
             return None
 
-        elements = []
         check_input_attributes = [Type("checkbox")]
         if self.checked:
             check_input_attributes.append(Checked(""))
-        elements.append(Input(check_input_attributes))
+        elements = [Input(check_input_attributes)]
         elements.extend([rt.get_html() for rt in self.rich_text])
         attributes = []
         if self.color and self.color != "default":

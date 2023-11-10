@@ -180,7 +180,7 @@ class GoogleDriveIngestDoc(IngestDocSessionHandleMixin, IngestDocCleanupMixin, B
     @SourceConnectionNetworkError.wrap
     def _run_downloader(self, downloader: "MediaIoBaseDownload") -> bool:
         downloaded = False
-        while downloaded is False:
+        while not downloaded:
             _, downloaded = downloader.next_chunk()
         return downloaded
 
@@ -215,8 +215,7 @@ class GoogleDriveIngestDoc(IngestDocSessionHandleMixin, IngestDocCleanupMixin, B
 
         saved = False
         if downloaded and file:
-            dir_ = Path(self.meta["download_dir"])
-            if dir_:
+            if dir_ := Path(self.meta["download_dir"]):
                 if not dir_.is_dir():
                     logger.debug(f"Creating directory: {self.meta.get('download_dir')}")
 

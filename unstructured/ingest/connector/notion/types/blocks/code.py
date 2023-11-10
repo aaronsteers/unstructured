@@ -38,6 +38,6 @@ class Code(BlockBase):
         if not texts:
             return None
         joined = [Br()] * (len(texts) * 2 - 1)
-        joined[0::2] = texts
+        joined[::2] = texts
 
         return Div([], joined)

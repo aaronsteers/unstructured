@@ -340,8 +340,7 @@ class BaseIngestDoc(IngestDocJsonMixin, ABC):
         if self.read_config.download_dir and self.filename:
             download_path = str(Path(self.read_config.download_dir).resolve())
             full_path = str(self.filename)
-            base_path = full_path.replace(download_path, "")
-            return base_path
+            return full_path.replace(download_path, "")
         return None
 
     @property
@@ -349,8 +348,7 @@ class BaseIngestDoc(IngestDocJsonMixin, ABC):
         if self.processor_config.output_dir and self._output_filename:
             output_path = str(Path(self.processor_config.output_dir).resolve())
             full_path = str(self._output_filename)
-            base_path = full_path.replace(output_path, "")
-            return base_path
+            return full_path.replace(output_path, "")
         return None
 
     @property
@@ -435,7 +433,7 @@ class BaseIngestDoc(IngestDocJsonMixin, ABC):
     ) -> t.List[Element]:
         if not partition_config.partition_by_api:
             logger.debug("Using local partition")
-            elements = partition(
+            return partition(
                 filename=str(self.filename),
                 data_source_metadata=DataSourceMetadata(
                     url=self.source_url,
@@ -456,15 +454,14 @@ class BaseIngestDoc(IngestDocJsonMixin, ABC):
             passthrough_partition_kwargs = {
                 k: str(v) for k, v in partition_kwargs.items() if v is not None
             }
-            elements = partition_via_api(
+            return partition_via_api(
                 filename=str(self.filename),
                 api_key=partition_config.api_key,
                 api_url=endpoint,
                 **passthrough_partition_kwargs,
             )
-            # TODO: add m_data_source_metadata to unstructured-api pipeline_api and then
-            # pass the stringified json here
-        return elements
+                # TODO: add m_data_source_metadata to unstructured-api pipeline_api and then
+                # pass the stringified json here
 
     def process_file(
         self,
@@ -612,7 +609,7 @@ class PermissionsCleanupMixin:
                 for item in os.listdir(folder_path)
                 if os.path.isdir(os.path.join(folder_path, item))
             ]
-            return len(folders) == 0
+            return not folders
 
         """Recursively clean up downloaded files and directories."""
         if cur_dir is None:

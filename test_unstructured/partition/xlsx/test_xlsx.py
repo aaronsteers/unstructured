@@ -78,7 +78,7 @@ def test_partition_xlsx_from_filename_with_header(filename="example-docs/stanley
     assert len(elements) == 2
     assert (
         clean_extra_whitespace(elements[0].text)
-        == "Stanley Cups Unnamed: 1 Unnamed: 2 " + EXPECTED_TEXT_XLSX
+        == f"Stanley Cups Unnamed: 1 Unnamed: 2 {EXPECTED_TEXT_XLSX}"
     )
     assert "<thead>" in elements[0].metadata.text_as_html
 
@@ -115,7 +115,7 @@ def test_partition_xlsx_from_file_with_header(filename="example-docs/stanley-cup
     assert len(elements) == 2
     assert (
         clean_extra_whitespace(elements[0].text)
-        == "Stanley Cups Unnamed: 1 Unnamed: 2 " + EXPECTED_TEXT_XLSX
+        == f"Stanley Cups Unnamed: 1 Unnamed: 2 {EXPECTED_TEXT_XLSX}"
     )
     assert "<thead>" in elements[0].metadata.text_as_html
 

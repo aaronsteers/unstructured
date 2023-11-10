@@ -36,8 +36,7 @@ class BedrockEmbeddingEncoder(BaseEmbeddingEncoder):
 
     def embed_documents(self, elements: List[Element]) -> List[Element]:
         embeddings = self.bedrock_client.embed_documents([str(e) for e in elements])
-        elements_with_embeddings = self._add_embeddings_to_elements(elements, embeddings)
-        return elements_with_embeddings
+        return self._add_embeddings_to_elements(elements, embeddings)
 
     def _add_embeddings_to_elements(self, elements, embeddings) -> List[Element]:
         assert len(elements) == len(embeddings)

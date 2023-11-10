@@ -34,7 +34,5 @@ class PeopleCell(DBCellBase):
     def get_html(self) -> Optional[HtmlTag]:
         if not self.people:
             return None
-        people_spans = []
-        for person in self.people:
-            people_spans.append(Span([], person.get_html()))
+        people_spans = [Span([], person.get_html()) for person in self.people]
         return Div([], people_spans)

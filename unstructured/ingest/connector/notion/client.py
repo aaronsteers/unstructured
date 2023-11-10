@@ -75,9 +75,7 @@ class BlocksChildrenEndpoint(NotionBlocksChildrenEndpoint):
                 if self.retry_handler
                 else super().list(block_id=block_id, **kwargs)
             )  # type: ignore
-            child_blocks = [Block.from_dict(data=b) for b in response.pop("results", [])]
-            yield child_blocks
-
+            yield [Block.from_dict(data=b) for b in response.pop("results", [])]
             next_cursor = response.get("next_cursor")
             if not response.get("has_more") or not next_cursor:
                 return

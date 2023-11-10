@@ -105,8 +105,7 @@ class ElasticsearchIngestDoc(IngestDocCleanupMixin, BaseIngestDoc):
         """Concatenates all values for each key in a dictionary in a nested manner.
         Used to parse a python dictionary to an aggregated string"""
         values = [self._flatten_values(value, seperator) for value in dictionary.values()]
-        concatenated_values = seperator.join(values)
-        return concatenated_values
+        return seperator.join(values)
 
     @SourceConnectionNetworkError.wrap
     @requires_dependencies(["elasticsearch"], extras="elasticsearch")

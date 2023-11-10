@@ -50,12 +50,12 @@ class NotionPageIngestDoc(IngestDocCleanupMixin, BaseIngestDoc):
     retry_strategy_config: t.Optional[RetryStrategyConfig] = None
 
     def _tmp_download_file(self):
-        page_file = self.page_id + ".html"
+        page_file = f"{self.page_id}.html"
         return Path(self.read_config.download_dir) / page_file
 
     @property
     def _output_filename(self):
-        page_file = self.page_id + ".json"
+        page_file = f"{self.page_id}.json"
         return Path(self.processor_config.output_dir) / page_file
 
     def _create_full_tmp_dir_path(self):
@@ -173,12 +173,12 @@ class NotionDatabaseIngestDoc(IngestDocCleanupMixin, BaseIngestDoc):
     registry_name: str = "notion_database"
 
     def _tmp_download_file(self):
-        page_file = self.database_id + ".html"
+        page_file = f"{self.database_id}.html"
         return Path(self.read_config.download_dir) / page_file
 
     @property
     def _output_filename(self):
-        page_file = self.database_id + ".json"
+        page_file = f"{self.database_id}.json"
         return Path(self.processor_config.output_dir) / page_file
 
     def _create_full_tmp_dir_path(self):
@@ -332,24 +332,22 @@ class NotionSourceConnector(SourceConnectorCleanupMixin, BaseSourceConnector):
                 f"page associated with page id could not be found: {page_id}",
             )
 
-        child_content = get_recursive_content_from_page(
+        return get_recursive_content_from_page(
             client=self.client,
             page_id=page_id,
             logger=logger,
         )
-        return child_content
 
     def get_child_content(self, page_id: str):
         from unstructured.ingest.connector.notion.helpers import (
             get_recursive_content_from_page,
         )
 
-        child_content = get_recursive_content_from_page(
+        return get_recursive_content_from_page(
             client=self.client,
             page_id=page_id,
             logger=logger,
         )
-        return child_content
 
     @requires_dependencies(dependencies=["notion_client"], extras="notion")
     def get_child_database_content(self, database_id: str):
@@ -364,12 +362,11 @@ class NotionSourceConnector(SourceConnectorCleanupMixin, BaseSourceConnector):
                 f"database associated with database id could not be found: {database_id}",
             )
 
-        child_content = get_recursive_content_from_database(
+        return get_recursive_content_from_database(
             client=self.client,
             database_id=database_id,
             logger=logger,
         )
-        return child_content
 
     def get_ingest_docs(self):
         docs: t.List[BaseIngestDoc] = []
@@ -421,9 +418,7 @@ class NotionSourceConnector(SourceConnectorCleanupMixin, BaseSourceConnector):
             ]
 
             if child_pages:
-                logger.info(
-                    "Adding the following child page ids: {}".format(", ".join(child_pages)),
-                )
+                logger.info(f'Adding the following child page ids: {", ".join(child_pages)}')
                 docs += [
                     NotionPageIngestDoc(
                         connector_config=self.connector_config,
@@ -438,9 +433,7 @@ class NotionSourceConnector(SourceConnectorCleanupMixin, BaseSourceConnector):
 
             if child_databases:
                 logger.info(
-                    "Adding the following child database ids: {}".format(
-                        ", ".join(child_databases),
-                    ),
+                    f'Adding the following child database ids: {", ".join(child_databases)}'
                 )
                 docs += [
                     NotionDatabaseIngestDoc(

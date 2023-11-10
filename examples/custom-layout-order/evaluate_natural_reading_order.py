@@ -77,8 +77,7 @@ def order_boxes(boxes):
     res = []
     recursive_xy_cut(np.asarray(boxes).astype(int), np.arange(len(boxes)), res)
     np_array_boxes = np.array(boxes)
-    ordered_boxes = np_array_boxes[np.array(res)].tolist()
-    return ordered_boxes
+    return np_array_boxes[np.array(res)].tolist()
 
 
 def draw_boxes(image, boxes, output_dir, base_name, page_num, output_type, label):

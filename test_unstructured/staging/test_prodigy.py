@@ -35,7 +35,7 @@ def output_csv_file(tmp_path):
 def test_validate_prodigy_metadata(elements):
     validated_metadata = prodigy._validate_prodigy_metadata(elements, metadata=None)
     assert len(validated_metadata) == len(elements)
-    assert all(not data for data in validated_metadata)
+    assert not any(validated_metadata)
 
 
 def test_validate_prodigy_metadata_with_valid_metadata(elements, valid_metadata):

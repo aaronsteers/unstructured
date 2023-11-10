@@ -32,6 +32,4 @@ class FilesCell(DBCellBase):
         return cls(files=[FileObject.from_dict(f) for f in data.pop("files", [])], **data)
 
     def get_html(self) -> Optional[HtmlTag]:
-        if not self.files:
-            return None
-        return Div([], [f.get_html() for f in self.files])
+        return None if not self.files else Div([], [f.get_html() for f in self.files])

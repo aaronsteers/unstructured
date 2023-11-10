@@ -33,10 +33,11 @@ def load_requirements(file_list: Optional[Union[str, List[str]]] = None) -> List
     for file in file_list:
         with open(file, encoding="utf-8") as f:
             requirements.extend(f.readlines())
-    requirements = [
-        req for req in requirements if not req.startswith("#") and not req.startswith("-")
+    return [
+        req
+        for req in requirements
+        if not req.startswith("#") and not req.startswith("-")
     ]
-    return requirements
 
 
 csv_reqs = load_requirements("requirements/extra-csv.in")

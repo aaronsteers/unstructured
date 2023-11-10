@@ -30,12 +30,9 @@ class DateCell(DBCellBase):
     @classmethod
     def from_dict(cls, data: dict):
         date = None
-        date_data = data.pop("date")
-        if date_data:
+        if date_data := data.pop("date"):
             date = DateType.from_dict(date_data)
         return cls(date=date, **data)
 
     def get_html(self) -> Optional[HtmlTag]:
-        if date := self.date:
-            return date.get_html()
-        return None
+        return date.get_html() if (date := self.date) else None

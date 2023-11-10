@@ -264,10 +264,11 @@ class ElementMetadata:
 
     def get_last_modified(self) -> Optional[datetime.datetime]:
         """Converts the date field to a datetime object."""
-        dt = None
-        if self.last_modified is not None:
-            dt = datetime.datetime.fromisoformat(self.last_modified)
-        return dt
+        return (
+            datetime.datetime.fromisoformat(self.last_modified)
+            if self.last_modified is not None
+            else None
+        )
 
 
 class ConsolidationStrategy(enum.Enum):
@@ -415,7 +416,7 @@ def _add_regex_metadata(
                             "end": end,
                         },
                     )
-                if len(results) > 0:
+                if results:
                     _regex_metadata[field_name] = results
 
             element.metadata.regex_metadata = _regex_metadata

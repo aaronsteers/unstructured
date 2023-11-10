@@ -133,7 +133,7 @@ class DeltaTableSourceConnector(SourceConnectorCleanupMixin, BaseSourceConnector
             without_files=self.connector_config.without_files,
         )
         rows = self.delta_table.to_pyarrow_dataset().count_rows()
-        if not rows > 0:
+        if rows <= 0:
             raise ValueError(f"no data found at {self.connector_config.table_uri}")
         logger.info(f"processing {rows} rows of data")
 

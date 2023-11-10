@@ -17,7 +17,7 @@ class LocalCliConfig(CliConfig):
 
     @staticmethod
     def get_cli_options() -> t.List[click.Option]:
-        options = [
+        return [
             click.Option(
                 ["--input-path"],
                 required=True,
@@ -32,13 +32,11 @@ class LocalCliConfig(CliConfig):
                 "local files are accepted, e.g. '*.html,*.txt'",
             ),
         ]
-        return options
 
 
 def get_base_src_cmd() -> BaseSrcCmd:
-    cmd_cls = BaseSrcCmd(
+    return BaseSrcCmd(
         cmd_name="local",
         cli_config=LocalCliConfig,
         additional_cli_options=[CliRecursiveConfig],
     )
-    return cmd_cls

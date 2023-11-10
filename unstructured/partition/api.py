@@ -198,18 +198,14 @@ def partition_multiple_via_api(
             files=_files,  # type: ignore
         )
 
-    if response.status_code == 200:
-        documents = []
-        response_list = response.json()
-        # NOTE(robinson) - this check is because if only one filename is passed, the return
-        # type from the API is a list of objects instead of a list of lists
-        if not isinstance(response_list[0], list):
-            response_list = [response_list]
-
-        for document in response_list:
-            documents.append(dict_to_elements(document))
-        return documents
-    else:
+    if response.status_code != 200:
         raise ValueError(
             f"Receive unexpected status code {response.status_code} from the API.",
         )
+    response_list = response.json()
+    # NOTE(robinson) - this check is because if only one filename is passed, the return
+    # type from the API is a list of objects instead of a list of lists
+    if not isinstance(response_list[0], list):
+        response_list = [response_list]
+
+    return [dict_to_elements(document) for document in response_list]

@@ -5,12 +5,11 @@ from unstructured.partition import pdf
 
 @pytest.fixture(scope="session")
 def chipper_results():
-    elements = pdf.partition_pdf(
+    return pdf.partition_pdf(
         "example-docs/layout-parser-paper-fast.pdf",
         strategy="hi_res",
         model_name="chipper",
     )
-    return elements
 
 
 @pytest.fixture(scope="session")

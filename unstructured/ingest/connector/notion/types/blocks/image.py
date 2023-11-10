@@ -16,6 +16,4 @@ class Image(BlockBase, FileObject):
     def get_html(self) -> Optional[HtmlTag]:
         if self.external:
             return Img([Src(self.external.url)], [])
-        if self.file:
-            return Img([Src(self.file.url)], [])
-        return None
+        return Img([Src(self.file.url)], []) if self.file else None

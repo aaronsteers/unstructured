@@ -31,6 +31,4 @@ class EmailCell(DBCellBase):
         return cls(**data)
 
     def get_html(self) -> Optional[HtmlTag]:
-        if email := self.email:
-            return Div([], email)
-        return None
+        return Div([], email) if (email := self.email) else None

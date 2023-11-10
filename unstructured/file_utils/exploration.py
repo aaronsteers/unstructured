@@ -13,8 +13,9 @@ def get_directory_file_info(directory: str) -> pd.DataFrame:
     exploration of text data sets. Returns a pandas DataFrame."""
     filenames: List[str] = []
     for path, _, files in os.walk(directory):
-        for filename_no_path in files:
-            filenames.append(os.path.join(path, filename_no_path))
+        filenames.extend(
+            os.path.join(path, filename_no_path) for filename_no_path in files
+        )
     return get_file_info(filenames)
 
 

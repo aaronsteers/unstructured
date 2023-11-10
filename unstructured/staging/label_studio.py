@@ -125,13 +125,11 @@ def stage_for_label_studio(
 
     label_studio_data: LABEL_STUDIO_TYPE = []
     for i, element in enumerate(elements):
-        data: Dict[str, str] = {}
-        data[text_field] = element.text
+        data: Dict[str, str] = {text_field: element.text}
         if isinstance(element.id, str):
             data[id_field] = element.id
 
-        labeling_example: Dict[str, Any] = {}
-        labeling_example["data"] = data
+        labeling_example: Dict[str, Any] = {"data": data}
         if annotations is not None:
             labeling_example["annotations"] = [a.to_dict() for a in annotations[i]]
         if predictions is not None:

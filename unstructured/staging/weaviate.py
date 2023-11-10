@@ -77,12 +77,10 @@ def create_unstructured_weaviate_class(class_name: str = "UnstructuredDocument")
                 },
             )
 
-    class_dict = {
+    return {
         "class": class_name,
         "properties": properties,
     }
-
-    return class_dict
 
 
 def _annotation_to_weaviate_data_type(annotation: str):

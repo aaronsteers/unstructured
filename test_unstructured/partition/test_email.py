@@ -267,8 +267,7 @@ def test_partition_email_from_text_file_raises_value_error():
 
 def test_partition_email_from_text():
     filename = os.path.join(EXAMPLE_DOCS_DIRECTORY, "fake-email.eml")
-    with open(filename) as f:
-        text = f.read()
+    text = pathlib.Path(filename).read_text()
     elements = partition_email(text=text)
     assert len(elements) > 0
     assert elements == EXPECTED_OUTPUT
@@ -356,8 +355,7 @@ def test_partition_email_raises_with_none_specified():
 
 def test_partition_email_raises_with_too_many_specified():
     filename = os.path.join(EXAMPLE_DOCS_DIRECTORY, "fake-email.eml")
-    with open(filename) as f:
-        text = f.read()
+    text = pathlib.Path(filename).read_text()
     with pytest.raises(ValueError):
         partition_email(filename=filename, text=text)
 

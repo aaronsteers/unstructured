@@ -167,7 +167,7 @@ def requires_dependencies(
             for dep in dependencies:
                 if not dependency_exists(dep):
                     missing_deps.append(dep)
-            if len(missing_deps) > 0:
+            if missing_deps:
                 raise ImportError(
                     f"Following dependencies are missing: {', '.join(missing_deps)}. "
                     + (
@@ -288,9 +288,7 @@ def ngrams(s: str, n: int) -> List:
 
     ngrams_list = []
     for i in range(len(s) - n + 1):
-        ngram = []
-        for j in range(n):
-            ngram.append(s[i + j])
+        ngram = [s[i + j] for j in range(n)]
         ngrams_list.append(tuple(ngram))
     return ngrams_list
 
@@ -352,7 +350,7 @@ def is_parent_box(
     if len(parent_target) != 4:
         return False
 
-    if add and len(parent_target) == 4:
+    if add:
         parent_target = list(parent_target)
         parent_target[0] -= add
         parent_target[1] -= add
@@ -365,12 +363,10 @@ def is_parent_box(
         and (child_target[2] <= parent_target[2] and child_target[3] <= parent_target[3])
     ):
         return True
-    if len(child_target) == 2 and (
+    return len(child_target) == 2 and (
         parent_target[0] <= child_target[0] <= parent_target[2]
         and parent_target[1] <= child_target[1] <= parent_target[3]
-    ):
-        return True
-    return False
+    )
 
 
 def calculate_overlap_percentage(
@@ -402,20 +398,24 @@ def calculate_overlap_percentage(
     min_area = min(area_box1, area_box2)
     total_area = area_box1 + area_box2
 
-    if intersection_ratio_method == "parent":
-        if max_area == 0:
-            return 0
+    if (
+        intersection_ratio_method == "parent"
+        and max_area == 0
+        or intersection_ratio_method != "parent"
+        and intersection_ratio_method == "partial"
+        and min_area == 0
+    ):
+        return 0
+    elif intersection_ratio_method == "parent":
         overlap_percentage = (intersection_area / max_area) * 100
 
     elif intersection_ratio_method == "partial":
-        if min_area == 0:
-            return 0
         overlap_percentage = (intersection_area / min_area) * 100
 
-    else:
-        if (area_box1 + area_box2) == 0:
-            return 0
+    elif (area_box1 + area_box2) == 0:
+        return 0
 
+    else:
         overlap_percentage = (intersection_area / (area_box1 + area_box2 - intersection_area)) * 100
 
     return round(overlap_percentage, 2), max_area, min_area, total_area
@@ -462,50 +462,45 @@ def identify_overlapping_case(
         ]
         overlapping_case = "Small partial overlap"
 
+    elif not text1:
+        overlapping_elements = [
+            f"{type1}(ix={ix_element1})",
+            f"{type2}(ix={ix_element2})",
+        ]
+        overlapping_case = f"partial overlap with empty content in {type1}"
+
+    elif not text2:
+        overlapping_elements = [
+            f"{type2}(ix={ix_element2})",
+            f"{type1}(ix={ix_element1})",
+        ]
+        overlapping_case = f"partial overlap with empty content in {type2}"
+
+    elif text1 in text2 or text2 in text1:
+        overlapping_elements = [
+            f"{type1}(ix={ix_element1})",
+            f"{type2}(ix={ix_element2})",
+        ]
+        overlapping_case = "partial overlap with duplicate text"
+
     else:
-        if not text1:
-            overlapping_elements = [
-                f"{type1}(ix={ix_element1})",
-                f"{type2}(ix={ix_element2})",
-            ]
-            overlapping_case = f"partial overlap with empty content in {type1}"
-
-        elif not text2:
-            overlapping_elements = [
-                f"{type2}(ix={ix_element2})",
-                f"{type1}(ix={ix_element1})",
-            ]
-            overlapping_case = f"partial overlap with empty content in {type2}"
-
-        elif text1 in text2 or text2 in text1:
-            overlapping_elements = [
-                f"{type1}(ix={ix_element1})",
-                f"{type2}(ix={ix_element2})",
-            ]
-            overlapping_case = "partial overlap with duplicate text"
-
+        (
+            largest_ngram_percentage,
+            largest_shared_ngrams_max,
+            largest_n,
+        ) = calculate_largest_ngram_percentage(text1, text2)
+        largest_ngram_percentage = round(largest_ngram_percentage, 2)
+        overlapping_elements = [
+            f"{type1}(ix={ix_element1})",
+            f"{type2}(ix={ix_element2})",
+        ]
+        if largest_ngram_percentage:
+            ref_type = type1 if len(text1.split()) < len(text2.split()) else type2
+            ref_type = f"of the text from{ref_type}" + f"({largest_n}-gram)"
+            overlapping_case = f"partial overlap sharing {largest_ngram_percentage}% {ref_type}"
         else:
-            (
-                largest_ngram_percentage,
-                largest_shared_ngrams_max,
-                largest_n,
-            ) = calculate_largest_ngram_percentage(text1, text2)
-            largest_ngram_percentage = round(largest_ngram_percentage, 2)
-            if not largest_ngram_percentage:
-                overlapping_elements = [
-                    f"{type1}(ix={ix_element1})",
-                    f"{type2}(ix={ix_element2})",
-                ]
-                overlapping_case = "partial overlap without sharing text"
+            overlapping_case = "partial overlap without sharing text"
 
-            else:
-                overlapping_elements = [
-                    f"{type1}(ix={ix_element1})",
-                    f"{type2}(ix={ix_element2})",
-                ]
-                ref_type = type1 if len(text1.split()) < len(text2.split()) else type2
-                ref_type = "of the text from" + ref_type + f"({largest_n}-gram)"
-                overlapping_case = f"partial overlap sharing {largest_ngram_percentage}% {ref_type}"
     return (
         overlapping_elements,
         overlapping_case,

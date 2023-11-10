@@ -21,7 +21,7 @@ class JiraCliConfig(CliConfig):
 
     @staticmethod
     def get_cli_options() -> t.List[click.Option]:
-        options = [
+        return [
             click.Option(
                 ["--api-token"],
                 required=True,
@@ -66,9 +66,7 @@ class JiraCliConfig(CliConfig):
                 "find or obtain keys. Alternatively, use API to obtain ids.",
             ),
         ]
-        return options
 
 
 def get_base_src_cmd() -> BaseSrcCmd:
-    cmd_cls = BaseSrcCmd(cmd_name="jira", cli_config=JiraCliConfig)
-    return cmd_cls
+    return BaseSrcCmd(cmd_name="jira", cli_config=JiraCliConfig)
